@@ -42,6 +42,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { id: 'nav-products', label: 'Products', icon: <Package size={18} />, href: '/product-management' },
       { id: 'nav-inventory', label: 'Inventory', icon: <Warehouse size={18} />, href: '/inventory' },
+      { id: 'nav-inv-movements', label: 'Movements', icon: <ArrowLeftRight size={18} />, href: '/inventory-movements' },
     ],
   },
   {
