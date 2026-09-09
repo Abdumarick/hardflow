@@ -9,6 +9,7 @@ import {
   Package, Warehouse, ShoppingBag, Truck, Receipt, ArrowLeftRight,
   CheckSquare, BarChart2, UserCog, ClipboardList, Bell, Settings,
   ChevronDown, ChevronRight, Building2, GitBranch, LogOut, UsersRound,
+  Banknote, RotateCcw, Shield,
 } from 'lucide-react';
 
 interface NavItem {
@@ -42,6 +43,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { id: 'nav-products', label: 'Products', icon: <Package size={18} />, href: '/product-management' },
       { id: 'nav-inventory', label: 'Inventory', icon: <Warehouse size={18} />, href: '/inventory' },
+      { id: 'nav-inv-movements', label: 'Movements', icon: <ArrowLeftRight size={18} />, href: '/inventory-movements' },
     ],
   },
   {
@@ -55,7 +57,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     label: 'Finance',
     items: [
       { id: 'nav-expenses', label: 'Expenses', icon: <Receipt size={18} />, href: '/expenses' },
-      { id: 'nav-payments', label: 'Payments', icon: <ArrowLeftRight size={18} />, href: '/payments' },
+      { id: 'nav-payments', label: 'Cash & Payments', icon: <Banknote size={18} />, href: '/cash-payments' },
+      { id: 'nav-returns', label: 'Returns', icon: <RotateCcw size={18} />, href: '/returns' },
     ],
   },
   {
@@ -72,6 +75,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     label: 'System',
     items: [
       { id: 'nav-notifications', label: 'Notifications', icon: <Bell size={18} />, badge: 5, badgeColor: 'info', href: '/notifications' },
+      { id: 'nav-super-admin', label: 'Super Admin', icon: <Shield size={18} />, href: '/super-admin' },
       { id: 'nav-settings', label: 'Settings', icon: <Settings size={18} />, href: '/settings' },
     ],
   },

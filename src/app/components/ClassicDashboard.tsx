@@ -219,14 +219,69 @@ export default function ClassicDashboard() {
 
       {/* Sales vs Expenses + Recent Sales */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="card p-4">
+        <div className="card p-4 flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-semibold text-foreground">Sales vs Expenses</h3>
               <p className="text-xs text-muted-foreground">This week</p>
             </div>
+            <button className="btn-ghost text-xs py-1 gap-1">
+              <Eye size={12} /> Full Report
+            </button>
           </div>
           <SalesVsExpensesChart />
+
+          {/* Weekly summary breakdown */}
+          <div className="mt-4 pt-4 border-t border-border space-y-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Weekly Summary</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
+                <p className="text-2xs text-muted-foreground mb-1">Total Sales</p>
+                <p className="text-base font-bold text-foreground tabular-nums">TZS 52.2M</p>
+                <p className="text-2xs text-success font-semibold mt-0.5">↑ 9.4% vs last week</p>
+              </div>
+              <div className="bg-danger/5 border border-danger/20 rounded-xl p-3">
+                <p className="text-2xs text-muted-foreground mb-1">Total Expenses</p>
+                <p className="text-base font-bold text-foreground tabular-nums">TZS 2.97M</p>
+                <p className="text-2xs text-danger font-semibold mt-0.5">↑ 3.1% vs last week</p>
+              </div>
+              <div className="bg-success/5 border border-success/20 rounded-xl p-3">
+                <p className="text-2xs text-muted-foreground mb-1">Gross Profit</p>
+                <p className="text-base font-bold text-success tabular-nums">TZS 49.2M</p>
+                <p className="text-2xs text-muted-foreground mt-0.5">After expenses</p>
+              </div>
+              <div className="bg-info/5 border border-info/20 rounded-xl p-3">
+                <p className="text-2xs text-muted-foreground mb-1">Net Margin</p>
+                <p className="text-base font-bold text-info tabular-nums">94.3%</p>
+                <p className="text-2xs text-muted-foreground mt-0.5">Expenses / Sales</p>
+              </div>
+            </div>
+
+            {/* Best & worst day */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-success inline-block" />
+                  Best day
+                </span>
+                <span className="font-semibold text-foreground">Friday — TZS 10.2M</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-warning inline-block" />
+                  Slowest day
+                </span>
+                <span className="font-semibold text-foreground">Sunday — TZS 3.8M</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-danger inline-block" />
+                  Highest expense day
+                </span>
+                <span className="font-semibold text-foreground">Thursday — TZS 670K</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Recent Sales */}
