@@ -1,0 +1,3 @@
+<?php
+namespace App\Models; use Illuminate\Database\Eloquent\Model; use Illuminate\Database\Eloquent\Relations\BelongsTo;
+class ProjectMaterialIssueItem extends Model { protected $fillable=['business_id','project_material_issue_id','product_id','product_unit_id','quantity','conversion_factor','unit_cost']; protected function casts():array{return ['quantity'=>'decimal:4','conversion_factor'=>'decimal:6','unit_cost'=>'decimal:2'];} public function product():BelongsTo{return $this->belongsTo(Product::class);} public function unit():BelongsTo{return $this->belongsTo(ProductUnit::class,'product_unit_id');} }

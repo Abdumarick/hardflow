@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'business_dashboard' => 'Dashibodi ya biashara', 'today' => 'Leo', 'week' => 'Wiki', 'month' => 'Mwezi',
+    'sales' => 'Mauzo', 'transactions' => 'Miamala :count', 'confirmed_period' => 'Yaliyothibitishwa katika kipindi kilichochaguliwa',
+    'gross_profit' => 'Faida ghafi', 'expenses' => 'Matumizi', 'outstanding_debt' => 'Madeni yaliyobaki',
+    'stock_value' => 'Thamani ya stoo', 'account_balance' => 'Salio la akaunti', 'approvals' => 'Idhini',
+    'waiting_decisions' => 'Zinasubiri uamuzi', 'sales_trend' => 'Mwenendo wa mauzo wa siku saba',
+    'confirmed_revenue' => 'Mapato yaliyothibitishwa kwa siku', 'view_sales' => 'Tazama mauzo', 'low_stock' => 'Stoo ndogo',
+    'below_minimum' => 'Kiwango cha chini au chini yake', 'no_low_stock' => 'Hakuna tahadhari za stoo ndogo.', 'open_inventory' => 'Fungua stoo',
+    'recent_sales' => 'Mauzo ya hivi karibuni', 'latest_activity' => 'Shughuli za hivi karibuni za tawi', 'view_all' => 'Tazama yote',
+    'invoice' => 'Ankara', 'customer' => 'Mteja', 'items' => 'Bidhaa', 'amount' => 'Kiasi', 'payment' => 'Malipo',
+    'walk_in' => 'Mteja wa dukani', 'no_sales' => 'Hakuna mauzo yaliyorekodiwa.', 'choose_workspace' => 'Chagua eneo lako la kazi',
+    'minimum_short' => 'chini :quantity', 'platform_admin' => 'Usimamizi wa jukwaa', 'platform_admin_help' => 'Simamia biashara na ufikiaji wa jukwaa.',
+    'open_admin' => 'Fungua usimamizi', 'active_branches' => '{1} Tawi :count linalotumika|[2,*] Matawi :count yanayotumika',
+    'no_workspace' => 'Hakuna eneo la biashara linalopatikana.',
+    'appearance' => 'Muonekano wa dashibodi', 'appearance_help' => 'Chagua jinsi dashibodi yako itakavyopangwa',
+    'classic' => 'Upau wa kawaida', 'classic_help' => 'Dashibodi ya kawaida yenye viashiria na sehemu zilizosawazishwa',
+    'smartflow' => 'Mtiririko wa SmartArt', 'smartflow_help' => 'Makundi yaliyounganishwa yenye kila moduli unayoweza kutumia',
+    'cards' => 'Kadi za Vipengele', 'cards_help' => 'Kila kipengele unachoruhusiwa kutumia kinaonyeshwa kama kadi',
+    'smartart_title' => 'Eneo la SmartArt', 'business_flow' => 'Mtiririko kamili wa biashara',
+    'smartart_help' => 'Pitia kila moduli inayopatikana kama mchakato mmoja wa biashara uliounganishwa.',
+    'cards_title' => 'Eneo la vipengele', 'all_components' => 'Vipengele vyote vya biashara',
+    'cards_help_text' => 'Fungua moduli yoyote ya HardFlow uliyoruhusiwa moja kwa moja kutoka kwenye kadi yake.',
+    'available_modules' => '{1} Moduli :count inayopatikana|[2,*] Moduli :count zinazopatikana',
+    'command' => 'Kituo cha Amri', 'command_help' => 'Muhtasari mfupi wa kufuatilia shughuli kwa haraka',
+    'preference_saved' => 'Mpangilio huhifadhiwa kwa akaunti ya kila mtumiaji.', 'appearance_saved' => 'Muonekano wa dashibodi umesasishwa.', 'close' => 'Funga',
+];

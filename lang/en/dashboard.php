@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'business_dashboard' => 'Business dashboard', 'today' => 'Today', 'week' => 'Week', 'month' => 'Month',
+    'sales' => 'Sales', 'transactions' => ':count transactions', 'confirmed_period' => 'Confirmed during selected period',
+    'gross_profit' => 'Gross profit', 'expenses' => 'Expenses', 'outstanding_debt' => 'Outstanding debt',
+    'stock_value' => 'Stock value', 'account_balance' => 'Account balance', 'approvals' => 'Approvals',
+    'waiting_decisions' => 'Waiting for decisions', 'sales_trend' => 'Seven-day sales trend',
+    'confirmed_revenue' => 'Confirmed revenue by day', 'view_sales' => 'View sales', 'low_stock' => 'Low stock',
+    'below_minimum' => 'At or below minimum', 'no_low_stock' => 'No low-stock alerts.', 'open_inventory' => 'Open inventory',
+    'recent_sales' => 'Recent sales', 'latest_activity' => 'Latest branch activity', 'view_all' => 'View all',
+    'invoice' => 'Invoice', 'customer' => 'Customer', 'items' => 'Items', 'amount' => 'Amount', 'payment' => 'Payment',
+    'walk_in' => 'Walk-in customer', 'no_sales' => 'No sales recorded yet.', 'choose_workspace' => 'Choose your workspace',
+    'minimum_short' => 'min :quantity', 'platform_admin' => 'Platform administration', 'platform_admin_help' => 'Manage businesses and platform access.',
+    'open_admin' => 'Open administration', 'active_branches' => '{1} :count active branch|[2,*] :count active branches',
+    'no_workspace' => 'No business workspace is available.',
+    'appearance' => 'Dashboard appearance', 'appearance_help' => 'Choose how your dashboard is organized',
+    'classic' => 'Classic Sidebar', 'classic_help' => 'Traditional KPI dashboard with balanced panels',
+    'smartflow' => 'SmartArt Flow', 'smartflow_help' => 'Connected process groups containing every module you can access',
+    'cards' => 'Component Cards', 'cards_help' => 'Every accessible system component displayed as a launch card',
+    'smartart_title' => 'SmartArt workspace', 'business_flow' => 'Complete business flow',
+    'smartart_help' => 'Move through every available module as one connected business process.',
+    'cards_title' => 'Component workspace', 'all_components' => 'All business components',
+    'cards_help_text' => 'Open any permitted HardFlow module directly from its card.',
+    'available_modules' => '{1} :count available module|[2,*] :count available modules',
+    'command' => 'Command Center', 'command_help' => 'Compact overview for fast operational monitoring',
+    'preference_saved' => 'Layout preference is saved per user account.', 'appearance_saved' => 'Dashboard appearance updated.', 'close' => 'Close',
+];

@@ -1,0 +1,3 @@
+<?php
+namespace App\Models; use Illuminate\Database\Eloquent\Model; use Illuminate\Database\Eloquent\Relations\BelongsTo; use Illuminate\Database\Eloquent\Relations\HasMany; use Illuminate\Support\Str;
+class ProjectMaterialIssue extends Model { protected $fillable=['business_id','branch_id','project_contract_id','issue_number','status','notes','created_by','confirmed_by','confirmed_at']; protected static function booted():void{static::creating(fn(self $m)=>$m->public_id??=(string)Str::uuid());} protected function casts():array{return ['confirmed_at'=>'datetime'];} public function project():BelongsTo{return $this->belongsTo(ProjectContract::class,'project_contract_id');} public function items():HasMany{return $this->hasMany(ProjectMaterialIssueItem::class);} }

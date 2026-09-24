@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] { display: none !important; }
+input, select, textarea, button { min-width: 0; max-width: 100%; }
+img, svg, video, canvas { max-width: 100%; height: auto; }
+.overflow-x-auto { -webkit-overflow-scrolling: touch; overscroll-behavior-inline: contain; }
+.overflow-x-auto > table { min-width: 40rem; }
+.hardflow-scrollbar { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+.hardflow-scrollbar::-webkit-scrollbar { width: 5px; }
+.hardflow-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+
+html.dark body, html.dark .bg-slate-50 { background-color: #020617 !important; color: #e2e8f0; }
+html.dark .bg-white, html.dark .bg-white\/95 { background-color: #0f172a !important; color: #e2e8f0; }
+html.dark .bg-slate-100, html.dark .bg-slate-50\/60 { background-color: #1e293b !important; }
+html.dark .border, html.dark .border-b, html.dark .border-r, html.dark .border-t,
+html.dark .border-slate-100, html.dark .border-slate-200, html.dark .border-slate-300 { border-color: #334155 !important; }
+html.dark .text-slate-950, html.dark .text-slate-900, html.dark .text-slate-800 { color: #f8fafc !important; }
+html.dark .text-slate-700, html.dark .text-slate-600 { color: #cbd5e1 !important; }
+html.dark .text-slate-500, html.dark .text-slate-400 { color: #94a3b8 !important; }
+html.dark input, html.dark select, html.dark textarea { background-color: #0f172a; border-color: #475569; color: #f8fafc; }
+html.dark option { background-color: #0f172a; color: #f8fafc; }
+html.dark .shadow-sm, html.dark .shadow-xl, html.dark .shadow-2xl { --tw-shadow-color: rgb(0 0 0 / .45); }
+
+@media (max-width: 639px) {
+    main section.grid.grid-cols-2 { grid-template-columns: minmax(0, 1fr); }
+    .hardflow-smartart .snap-x > div > div:first-child { width: min(14rem, calc(100vw - 5rem)); }
+    [role="dialog"] { max-height: calc(100dvh - 1.5rem); overflow-y: auto; }
+    .fixed.inset-0 > .w-full { max-height: calc(100dvh - 1.5rem); overflow-y: auto; }
+}
