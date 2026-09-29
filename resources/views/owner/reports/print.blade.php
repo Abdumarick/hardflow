@@ -9,10 +9,10 @@
         * { box-sizing: border-box; }
         body { margin: 0; color: #0f172a; font-family: Arial, sans-serif; font-size: 12px; }
         header { display: flex; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 2px solid #1d4ed8; }
-        h1 { margin: 4px 0; font-size: 24px; }
-        h2 { margin: 26px 0 10px; font-size: 15px; }
+        h1 { margin: 0; font-size: 26px; }
+        h2 { margin: 6px 0 10px; font-size: 15px; }
         p { margin: 3px 0; color: #475569; }
-        .brand { color: #1d4ed8; font-size: 17px; font-weight: 800; }
+        .platform { color: #64748b; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
         .meta { text-align: right; }
         .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px; }
         .card { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
@@ -31,7 +31,7 @@
 <body>
     @unless($pdf ?? false)<div class="actions"><button onclick="window.print()">{{ __('reports.print_save_pdf') }}</button></div>@endunless
     <header>
-        <div><div class="brand">HardFlow</div><h1>{{ $report['title'] }}</h1><p>{{ $business->name }} · {{ $branch->name }}</p></div>
+        <div><h1>{{ $business->name }}</h1><p class="platform">HardFlow</p><h2>{{ $report['title'] }}</h2><p>{{ $branch->name }}</p></div>
         <div class="meta"><strong>{{ $from->format('d M Y') }} – {{ $to->format('d M Y') }}</strong><p>{{ __('reports.generated') }} {{ now()->format('d M Y, H:i') }}</p><p>{{ __('reports.currency') }}: {{ $business->currency }}</p></div>
     </header>
     <section class="cards">

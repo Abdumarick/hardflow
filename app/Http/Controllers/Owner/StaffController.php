@@ -106,8 +106,12 @@ class StaffController extends Controller
         }
 
         $temporaryPassword = TemporaryCredentials::password($staff->name);
+        if (! $sms->sendPasswordReset($staff, $temporaryPassword)) {
+            throw ValidationException::withMessages([
+                'staff' => 'The password reset SMS could not be sent. The password was not changed.',
+            ]);
+        }
         $action->execute($request->user(), $tenantContext->businessOrFail(), $staff, $temporaryPassword, $data['reason']);
-        $sms->sendPasswordReset($staff, $temporaryPassword);
 
         return back()->with('status', __('staff.password_reset_successfully'));
     }

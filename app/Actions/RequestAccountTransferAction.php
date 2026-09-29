@@ -18,7 +18,11 @@ class RequestAccountTransferAction
     {
         $business = app(TenantContext::class)->businessOrFail();
         $branchId = app(TenantContext::class)->branchId();
-        if (! $actor->hasPermissionInBusiness(PermissionName::AccountTransfersCreate, $business) || $from->business_id !== $business->id || $to->business_id !== $business->id) {
+        if (! $actor->hasPermissionInBusiness(PermissionName::AccountTransfersCreate, $business)
+            || $from->business_id !== $business->id
+            || $to->business_id !== $business->id
+            || ($from->branch_id !== null && $from->branch_id !== $branchId)
+            || ($to->branch_id !== null && $to->branch_id !== $branchId)) {
             throw new AuthorizationException;
         }
         if ($from->id === $to->id || bccomp($amount, '0', 2) <= 0) {

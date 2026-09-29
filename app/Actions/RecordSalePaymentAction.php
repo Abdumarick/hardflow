@@ -23,7 +23,12 @@ class RecordSalePaymentAction
     public function execute(User $actor, Sale $sale, PaymentAccount $account, string $amount, ?string $reference = null, ?string $notes = null): Payment
     {
         $business = app(TenantContext::class)->businessOrFail();
-        if (! $actor->hasPermissionInBusiness(PermissionName::PaymentsCreate, $business) || $sale->business_id !== $business->id || $sale->branch_id !== app(TenantContext::class)->branchId() || $account->business_id !== $business->id) {
+        $branchId = app(TenantContext::class)->branchId();
+        if (! $actor->hasPermissionInBusiness(PermissionName::PaymentsCreate, $business)
+            || $sale->business_id !== $business->id
+            || $sale->branch_id !== $branchId
+            || $account->business_id !== $business->id
+            || ($account->branch_id !== null && $account->branch_id !== $branchId)) {
             throw new AuthorizationException;
         }
         if ($account->method->requires_reference && blank($reference)) {

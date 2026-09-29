@@ -78,8 +78,11 @@ class ExpenseController extends Controller
             $query->whereDate('expense_date', '<=', $request->date('to'));
         }
 
-        return response()->streamDownload(function () use ($query) {
+        return response()->streamDownload(function () use ($business, $query) {
             $stream = fopen('php://output', 'w');
+            fputcsv($stream, [$business->name]);
+            fputcsv($stream, ['HardFlow']);
+            fputcsv($stream, []);
             fputcsv($stream, ['Expense number', 'Date', 'Title', 'Category', 'Vendor', 'Account', 'Status', 'Amount TZS']);
             $query->orderBy('expense_date')->each(function (Expense $expense) use ($stream) {
                 fputcsv($stream, [$expense->expense_number, $expense->expense_date->toDateString(), $expense->title, $expense->category->name, $expense->vendor, $expense->account?->name, $expense->status->value, $expense->amount]);

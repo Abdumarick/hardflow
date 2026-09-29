@@ -11,6 +11,48 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
 .hardflow-scrollbar::-webkit-scrollbar { width: 5px; }
 .hardflow-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 
+/* Keep the Layaway and Project dialogs centered, while allowing their content
+   to scroll within the visible viewport on short or narrow screens. */
+[x-show="create"].fixed.inset-0.z-50,
+[x-show="goods"].fixed.inset-0.z-50,
+[x-show="payment"].fixed.inset-0.z-50,
+[x-show="request"].fixed.inset-0.z-50,
+[x-show="target"].fixed.inset-0.z-50 {
+    display: flex;
+    min-height: 100dvh;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: .75rem;
+}
+
+[x-show="create"].fixed.inset-0.z-50 > div,
+[x-show="goods"].fixed.inset-0.z-50 > div,
+[x-show="payment"].fixed.inset-0.z-50 > div,
+[x-show="request"].fixed.inset-0.z-50 > div,
+[x-show="target"].fixed.inset-0.z-50 > div {
+    max-height: calc(100dvh - 1.5rem);
+    overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+    [x-show="create"].fixed.inset-0.z-50,
+    [x-show="goods"].fixed.inset-0.z-50,
+    [x-show="payment"].fixed.inset-0.z-50,
+    [x-show="request"].fixed.inset-0.z-50,
+    [x-show="target"].fixed.inset-0.z-50 {
+        padding: 1rem;
+    }
+
+    [x-show="create"].fixed.inset-0.z-50 > div,
+    [x-show="goods"].fixed.inset-0.z-50 > div,
+    [x-show="payment"].fixed.inset-0.z-50 > div,
+    [x-show="request"].fixed.inset-0.z-50 > div,
+    [x-show="target"].fixed.inset-0.z-50 > div {
+        max-height: calc(100dvh - 2rem);
+    }
+}
+
 html.dark body, html.dark .bg-slate-50 { background-color: #020617 !important; color: #e2e8f0; }
 html.dark .bg-white, html.dark .bg-white\/95 { background-color: #0f172a !important; color: #e2e8f0; }
 html.dark .bg-slate-100, html.dark .bg-slate-50\/60 { background-color: #1e293b !important; }

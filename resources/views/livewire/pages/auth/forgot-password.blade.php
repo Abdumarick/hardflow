@@ -25,14 +25,12 @@ new #[Layout('layouts.guest')] class extends Component
             ->where('is_active', true)
             ->first();
 
-        if (! $user || ! app(SmsPasswordResetService::class)->request($user)) {
-            $this->addError('identifier', 'We could not send a password reset SMS. If you have already made three requests, contact your business owner or Super Admin.');
-
-            return;
+        if ($user) {
+            app(SmsPasswordResetService::class)->request($user);
         }
 
         $this->reset('identifier');
-        session()->flash('status', 'A temporary password was sent to your registered mobile number.');
+        session()->flash('status', 'If the account is eligible, a temporary password will be sent to its registered mobile number.');
     }
 }; ?>
 

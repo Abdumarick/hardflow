@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Owner\CatalogueController;
-use App\Http\Controllers\Owner\CustomerController;
 use App\Http\Controllers\Owner\CommitmentController;
+use App\Http\Controllers\Owner\CustomerController;
 use App\Http\Controllers\Owner\ExpenseController;
 use App\Http\Controllers\Owner\GovernanceController;
 use App\Http\Controllers\Owner\InventoryController;
@@ -164,6 +164,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::post('sales/{sale}/returns', [SalesController::class, 'requestReturn'])->name('sales.returns.store');
         Route::put('sales/returns/{return}/decision', [SalesController::class, 'decideReturn'])->name('sales.returns.decision');
         Route::post('sales/quotations', [SalesController::class, 'storeQuotation'])->name('sales.quotations.store');
+        Route::get('sales/quotations/{quotation}/print', [SalesController::class, 'printQuotation'])->name('sales.quotations.print');
         Route::post('sales/quotations/{quotation}/convert', [SalesController::class, 'convert'])->name('sales.quotations.convert');
         Route::post('sales/{sale}/releases', [SalesController::class, 'release'])->name('sales.releases.store');
         Route::post('sales/releases/{release}/confirm', [SalesController::class, 'confirmRelease'])->name('sales.releases.confirm');

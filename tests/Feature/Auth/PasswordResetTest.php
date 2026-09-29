@@ -57,7 +57,22 @@ class PasswordResetTest extends TestCase
         Http::assertSent(fn ($request) => $request['recipients'] === $user->phone);
     }
 
-    public function test_fourth_self_service_password_reset_request_is_blocked(): void
+    public function test_password_is_not_changed_when_the_reset_sms_cannot_be_delivered(): void
+    {
+        config()->set('sms.enabled', false);
+        $user = User::factory()->create(['phone' => '255712345678']);
+
+        Volt::test('pages.auth.forgot-password')
+            ->set('identifier', $user->email)
+            ->call('sendPasswordResetLink')
+            ->assertHasNoErrors()
+            ->assertSee('Go to Login');
+
+        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+        Http::assertNothingSent();
+    }
+
+    public function test_password_reset_requests_are_rate_limited_without_permanently_locking_the_account(): void
     {
         $user = User::factory()->create(['phone' => '255712345678']);
 
@@ -71,9 +86,10 @@ class PasswordResetTest extends TestCase
         Volt::test('pages.auth.forgot-password')
             ->set('identifier', $user->email)
             ->call('sendPasswordResetLink')
-            ->assertHasErrors('identifier');
+            ->assertHasNoErrors()
+            ->assertSee('Go to Login');
 
-        $this->assertNotNull($user->fresh()->password_reset_blocked_at);
+        $this->assertNull($user->fresh()->password_reset_blocked_at);
         Http::assertSentCount(3);
     }
 }

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Owner;
 
-use App\Actions\CancelSaleAction;
 use App\Actions\BorrowNeighbourStockAction;
-use App\Actions\ReturnNeighbourStockAction;
+use App\Actions\CancelSaleAction;
+use App\Actions\CompleteSaleCheckoutAction;
 use App\Actions\ConfirmGoodsReleaseAction;
 use App\Actions\ConfirmSaleAction;
-use App\Actions\CompleteSaleCheckoutAction;
 use App\Actions\ConvertQuotationToSaleAction;
 use App\Actions\CreateCustomerAction;
 use App\Actions\CreateGoodsReleaseAction;
@@ -15,13 +14,14 @@ use App\Actions\CreateQuotationAction;
 use App\Actions\CreateSaleAction;
 use App\Actions\DecideSaleReturnAction;
 use App\Actions\RequestSaleReturnAction;
+use App\Actions\ReturnNeighbourStockAction;
 use App\Enums\PermissionName;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\GoodsRelease;
 use App\Models\NeighbourStockBorrow;
-use App\Models\Product;
 use App\Models\PaymentAccount;
+use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\Sale;
 use App\Models\SaleReturn;
@@ -166,6 +166,7 @@ class SalesController extends Controller
     {
         $data = $request->validate(['sale_item_id' => ['required', 'integer'], 'quantity' => ['required', 'numeric', 'gt:0'], 'neighbour_name' => ['required', 'string', 'max:255'], 'neighbour_phone' => ['nullable', 'string', 'max:50'], 'return_due_date' => ['nullable', 'date'], 'notes' => ['nullable', 'string', 'max:1000']]);
         $action->execute($request->user(), $sale, $data);
+
         return back()->with('status', 'Neighbour stock recorded. You can now create and confirm the goods release.');
     }
 
@@ -173,6 +174,7 @@ class SalesController extends Controller
     {
         $data = $request->validate(['quantity' => ['required', 'numeric', 'gt:0'], 'notes' => ['nullable', 'string', 'max:1000']]);
         $action->execute($request->user(), $borrow, $data);
+
         return back()->with('status', 'Neighbour stock return recorded and inventory updated.');
     }
 
@@ -187,7 +189,29 @@ class SalesController extends Controller
     {
         abort_unless($sale->business_id === $tenant->businessId() && $request->user()->hasPermissionInBusiness(PermissionName::SalesView, $tenant->businessOrFail()), 403);
 
-        return view('owner.sales.print', ['document' => $sale->load('customer', 'items.product', 'items.productUnit.unit'), 'kind' => 'Sale']);
+        return view('owner.sales.print', [
+            'document' => $sale->load('customer', 'items.product', 'items.productUnit.unit', 'branch.business'),
+            'documentNumber' => $sale->sale_number,
+            'documentDate' => $sale->sale_date,
+            'kind' => 'Sale',
+        ]);
+    }
+
+    public function printQuotation(Request $request, Quotation $quotation, TenantContext $tenant): View
+    {
+        abort_unless(
+            $quotation->business_id === $tenant->businessId()
+            && $quotation->branch_id === $tenant->branchId()
+            && $request->user()->hasPermissionInBusiness(PermissionName::QuotationsView, $tenant->businessOrFail()),
+            403,
+        );
+
+        return view('owner.sales.print', [
+            'document' => $quotation->load('customer', 'items.product', 'items.productUnit.unit', 'branch.business'),
+            'documentNumber' => $quotation->quotation_number,
+            'documentDate' => $quotation->quotation_date,
+            'kind' => ucfirst($quotation->document_type),
+        ]);
     }
 
     private function transactionData(Request $request, bool $quotation): array

@@ -51,7 +51,9 @@ class ReportsTest extends TestCase
             ->get(route('owner.reports.print', ['section' => 'payments']))
             ->assertOk()
             ->assertSeeText('Print or save as PDF')
-            ->assertSeeText('Payments by method');
+            ->assertSeeText('Payments by method')
+            ->assertSeeText($business->name)
+            ->assertSeeText('HardFlow');
 
         $business->update(['locale' => 'sw', 'currency' => 'USD']);
         $this->actingAs($owner)

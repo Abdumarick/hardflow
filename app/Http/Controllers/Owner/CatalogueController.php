@@ -25,9 +25,9 @@ use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -185,8 +185,11 @@ class CatalogueController extends Controller
             ->when($selected->isNotEmpty(), fn ($query) => $query->whereIn('public_id', $selected))
             ->with(['category', 'brand', 'productUnits.unit', 'productUnits.prices.priceLevel'])->orderBy('name')->get();
 
-        return response()->streamDownload(function () use ($products): void {
+        return response()->streamDownload(function () use ($business, $products): void {
             $output = fopen('php://output', 'w');
+            fputcsv($output, [$business->name]);
+            fputcsv($output, ['HardFlow']);
+            fputcsv($output, []);
             fputcsv($output, ['name', 'sku', 'barcode', 'category', 'brand', 'unit', 'retail_price', 'wholesale_price', 'description']);
             foreach ($products as $product) {
                 $unit = $product->productUnits->firstWhere('is_base', true);

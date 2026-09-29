@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Support\TenantContext;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
@@ -113,6 +114,33 @@ class ManagementActionsTest extends TestCase
         ]);
     }
 
+    public function test_staff_creator_cannot_assign_the_shop_owner_role(): void
+    {
+        [$business, $owner] = $this->createBusiness();
+        $branch = $business->branches->first();
+        $creator = User::factory()->create();
+        $creatorRole = app(CreateRoleAction::class)->execute(
+            $owner,
+            $business,
+            'Staff Creator',
+            [Permission::query()->where('slug', PermissionName::UsersCreate)->firstOrFail()->id],
+        );
+        DB::table('business_users')->insert(['business_id' => $business->id, 'user_id' => $creator->id, 'is_active' => true, 'joined_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('branch_users')->insert(['business_id' => $business->id, 'branch_id' => $branch->id, 'user_id' => $creator->id, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('user_roles')->insert(['business_id' => $business->id, 'user_id' => $creator->id, 'role_id' => $creatorRole->id, 'created_at' => now(), 'updated_at' => now()]);
+        app(TenantContext::class)->setForUser($creator, $business, $branch);
+
+        $this->expectException(ValidationException::class);
+
+        app(CreateStaffAction::class)->execute($creator, $business, [
+            'name' => 'Escalated User',
+            'email' => 'escalated@example.com',
+            'password' => 'secure-password',
+            'branch_ids' => [$branch->id],
+            'role_ids' => [$business->roles->firstWhere('slug', DefaultRole::Owner->value)->id],
+        ]);
+    }
+
     public function test_super_admin_can_disable_global_user_and_disabled_user_cannot_log_in(): void
     {
         $superAdmin = User::factory()->superAdmin()->create();
@@ -194,6 +222,24 @@ class ManagementActionsTest extends TestCase
             && str_contains($request['message'], 'Temporary Password: '));
     }
 
+    public function test_manager_reset_does_not_change_a_password_when_the_sms_cannot_be_sent(): void
+    {
+        [$business, $owner] = $this->createBusiness();
+        $branch = $business->branches->first();
+        $managerRole = $business->roles()->where('slug', DefaultRole::Manager->value)->firstOrFail();
+        $cashierRole = $business->roles()->where('slug', DefaultRole::Cashier->value)->firstOrFail();
+        $manager = app(CreateStaffAction::class)->execute($owner, $business, ['name' => 'Branch Manager', 'email' => 'manager@example.com', 'password' => 'manager-password', 'branch_ids' => [$branch->id], 'role_ids' => [$managerRole->id]]);
+        $staff = app(CreateStaffAction::class)->execute($owner, $business, ['name' => 'Managed Cashier', 'email' => 'cashier@example.com', 'phone' => '+255712345678', 'password' => 'original-password', 'branch_ids' => [$branch->id], 'role_ids' => [$cashierRole->id]]);
+        config()->set('sms.enabled', false);
+
+        $this->actingAs($manager)
+            ->withSession(['tenant.business_id' => $business->id, 'tenant.branch_id' => $branch->id])
+            ->put(route('owner.staff.password.reset', $staff), ['reason' => 'Staff requested access help.'])
+            ->assertSessionHasErrors('staff');
+
+        $this->assertTrue(Hash::check('original-password', $staff->fresh()->password));
+    }
+
     public function test_staff_creation_normalizes_the_phone_and_sends_generated_credentials(): void
     {
         [$business, $owner] = $this->createBusiness();
@@ -222,7 +268,7 @@ class ManagementActionsTest extends TestCase
             && str_contains($request['message'], 'Company: Action Test Business')
             && str_contains($request['message'], "Username: {$staff->username}")
             && str_contains($request['message'], 'Role: Cashier')
-            && str_contains($request['message'], 'Temporary Password: John'));
+            && preg_match('/Temporary Password: John-[A-Za-z0-9]{12}/', $request['message']) === 1);
     }
 
     public function test_owner_can_update_an_employees_account_details(): void

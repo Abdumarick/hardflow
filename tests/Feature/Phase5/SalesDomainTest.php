@@ -3,9 +3,9 @@
 namespace Tests\Feature\Phase5;
 
 use App\Actions\ChangeProductPriceAction;
+use App\Actions\CompleteSaleCheckoutAction;
 use App\Actions\ConfirmGoodsReleaseAction;
 use App\Actions\ConfirmSaleAction;
-use App\Actions\CompleteSaleCheckoutAction;
 use App\Actions\ConvertQuotationToSaleAction;
 use App\Actions\CreateBusinessAction;
 use App\Actions\CreateCustomerAction;
@@ -14,9 +14,9 @@ use App\Actions\CreateProductAction;
 use App\Actions\CreateQuotationAction;
 use App\Actions\CreateSaleAction;
 use App\Actions\RecordOpeningStockAction;
-use App\Models\StockBalance;
 use App\Models\PaymentAccount;
 use App\Models\PaymentMethod;
+use App\Models\StockBalance;
 use App\Models\Unit;
 use App\Models\User;
 use App\Support\TenantContext;
@@ -83,6 +83,26 @@ class SalesDomainTest extends TestCase
         $this->assertSame('290.00', $sale->total_amount);
         $this->assertDatabaseCount('stock_movements', 1);
         $this->assertDatabaseHas('quotations', ['id' => $quotation->id, 'status' => 'converted', 'converted_sale_id' => $sale->id]);
+    }
+
+    public function test_owner_can_print_a_quotation_with_business_first_branding(): void
+    {
+        [$business, $owner, , $productUnit, $level] = $this->fixture('QUOTEPRINT');
+        $quotation = app(CreateQuotationAction::class)->execute($owner, $business, [
+            'branch_id' => $business->branches->first()->id,
+            'document_type' => 'quotation',
+            'walk_in_name' => 'Mteja Hardware',
+            'quotation_date' => now()->toDateString(),
+            'items' => [['product_unit_id' => $productUnit->id, 'price_level_id' => $level->id, 'quantity' => '2']],
+        ]);
+
+        $this->actingAs($owner)
+            ->withSession(['tenant.business_id' => $business->id, 'tenant.branch_id' => $business->branches->first()->id])
+            ->get(route('owner.sales.quotations.print', $quotation))
+            ->assertOk()
+            ->assertSeeText($business->name)
+            ->assertSeeText('HardFlow')
+            ->assertSeeText($quotation->quotation_number);
     }
 
     public function test_owner_can_open_sales_workspace(): void

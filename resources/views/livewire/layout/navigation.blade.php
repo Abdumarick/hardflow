@@ -69,7 +69,7 @@ new class extends Component
     <div x-show="mobileSidebarOpen" x-cloak @click="mobileSidebarOpen=false" class="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"></div>
     <aside :class="[mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0', sidebarCollapsed ? 'lg:w-20' : 'lg:w-64']" class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-all duration-200">
         <div class="flex h-16 items-center gap-3 border-b px-4" :class="sidebarCollapsed && 'lg:justify-center'">
-            <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2.5"><x-application-logo class="h-9 w-9 shrink-0 text-blue-700"/><span x-show="!sidebarCollapsed" class="text-lg font-black tracking-tight text-slate-950">HardFlow</span></a>
+            <a href="{{ route('dashboard') }}" wire:navigate class="flex min-w-0 items-center gap-2.5"><x-application-logo class="h-9 w-9 shrink-0 text-blue-700"/>@if($business)<span x-show="!sidebarCollapsed" class="min-w-0"><span class="block truncate text-base font-black tracking-tight text-slate-950">{{ $business->name }}</span><span class="block text-[10px] font-bold uppercase tracking-[.16em] text-blue-700">HardFlow</span></span>@else<span x-show="!sidebarCollapsed" class="text-lg font-black tracking-tight text-slate-950">HardFlow</span>@endif</a>
             <button @click="mobileSidebarOpen=false" class="ml-auto rounded-lg p-2 text-slate-500 lg:hidden" aria-label="Close navigation">×</button>
         </div>
         @if($business)
@@ -104,6 +104,7 @@ new class extends Component
     <header :class="sidebarCollapsed ? 'lg:left-20' : 'lg:left-64'" class="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur transition-all duration-200">
         <button @click="mobileSidebarOpen=true" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open navigation">☰</button>
         <button @click="sidebarCollapsed=!sidebarCollapsed; localStorage.setItem('hardflow-sidebar-collapsed', sidebarCollapsed)" class="hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:block" :aria-label="sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'" title="Collapse or expand navigation">☰</button>
+        @if($business)<div class="min-w-0 flex-1 sm:hidden"><p class="truncate text-sm font-black text-slate-950">{{ $business->name }}</p><p class="text-[9px] font-bold uppercase tracking-[.14em] text-blue-700">HardFlow</p></div>@endif
         <div class="hidden max-w-sm flex-1 items-center gap-2 rounded-xl border bg-slate-50 px-3 py-2 text-sm text-slate-400 sm:flex"><span>⌕</span><span class="truncate">Search products, customers, invoices...</span></div>
         <div class="ml-auto flex items-center gap-2">
             <form method="POST" action="{{ route('interface.locale.update') }}">@csrf @method('PUT')<input type="hidden" name="locale" value="{{ app()->getLocale() === 'en' ? 'sw' : 'en' }}"><button type="submit" class="flex h-9 min-w-9 items-center justify-center rounded-xl border px-2 text-[11px] font-black text-slate-600 hover:bg-slate-50" title="{{ app()->getLocale() === 'en' ? 'Badili kwenda Kiswahili' : 'Switch to English' }}">{{ strtoupper(app()->getLocale()) }}</button></form>

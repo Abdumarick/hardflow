@@ -10,7 +10,7 @@
     <div class="receipt">
         <div class="success"><strong>✓ {{ __('payments.payment_complete') }}</strong><div class="muted">{{ $payment->payment_number }}</div></div>
         <div class="body">
-            <div class="center"><h2 style="margin:0">{{ $business->name }}</h2><p class="muted">{{ $branch?->name }}<br>{{ now()->format('d/m/Y H:i') }}</p></div>
+            <div class="center"><h2 style="margin:0">{{ $business->name }}</h2><p class="muted">HardFlow<br>{{ $branch?->name }}<br>{{ now()->format('d/m/Y H:i') }}</p></div>
             <div class="row"><span>{{ __('payments.customer') }}</span><strong>{{ $payment->customer?->name ?? $payment->allocations->first()?->sale?->walk_in_name ?? __('payments.walk_in_customer') }}</strong></div>
             <div class="row"><span>{{ __('payments.method') }}</span><strong>{{ $payment->account->method->name }}</strong></div>
             <div class="row"><span>{{ __('payments.account') }}</span><strong>{{ $payment->account->name }}</strong></div>

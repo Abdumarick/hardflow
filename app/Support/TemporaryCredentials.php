@@ -12,7 +12,7 @@ class TemporaryCredentials
         $firstName = Str::of($name)->trim()->explode(' ')->first();
         $firstName = Str::of($firstName)->ascii()->replaceMatches('/[^A-Za-z]/', '')->ucfirst()->value();
 
-        return ($firstName !== '' ? $firstName : 'Staff').random_int(1000, 9999);
+        return ($firstName !== '' ? $firstName : 'Staff').'-'.Str::password(12, true, true, false, false);
     }
 
     public static function username(string $name): string

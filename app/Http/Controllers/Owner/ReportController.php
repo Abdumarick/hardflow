@@ -11,6 +11,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,11 +28,15 @@ class ReportController extends Controller
 
     public function export(Request $request, TenantContext $tenant, BuildOperationalReportAction $reports): StreamedResponse
     {
-        [, $branch, $section, $from, $to] = $this->context($request, $tenant);
+        [$business, $branch, $section, $from, $to] = $this->context($request, $tenant);
         $report = $reports->execute($branch, $section, $from, $to);
 
-        return response()->streamDownload(function () use ($report) {
+        return response()->streamDownload(function () use ($business, $branch, $report) {
             $stream = fopen('php://output', 'w');
+            fputcsv($stream, [$business->name]);
+            fputcsv($stream, ['HardFlow']);
+            fputcsv($stream, [$branch->name]);
+            fputcsv($stream, []);
             fputcsv($stream, ['Group', 'Amount']);
             foreach ($report['rows'] as $row) {
                 fputcsv($stream, [$row->label, $row->amount]);
@@ -75,10 +80,15 @@ class ReportController extends Controller
 
         $writer = new Writer;
         $writer->openToFile($path);
-        $writer->addRow(Row::fromValues([$business->name, $branch->name]));
-        $writer->addRow(Row::fromValues([$report['title'], $from->toDateString().' to '.$to->toDateString()]));
+        $businessStyle = (new Style)->setFontBold()->setFontSize(18)->setFontColor('1D4ED8');
+        $platformStyle = (new Style)->setFontSize(10)->setFontColor('64748B');
+        $headingStyle = (new Style)->setFontBold()->setFontSize(12);
+        $writer->addRow(Row::fromValues([$business->name], $businessStyle));
+        $writer->addRow(Row::fromValues(['HardFlow'], $platformStyle));
+        $writer->addRow(Row::fromValues([$branch->name]));
+        $writer->addRow(Row::fromValues([$report['title'], $from->toDateString().' to '.$to->toDateString()], $headingStyle));
         $writer->addRow(Row::fromValues([]));
-        $writer->addRow(Row::fromValues(['Group', 'Value']));
+        $writer->addRow(Row::fromValues(['Group', 'Value'], $headingStyle));
         foreach ($report['rows'] as $row) {
             $writer->addRow(Row::fromValues([$row->label, (float) $row->amount]));
         }

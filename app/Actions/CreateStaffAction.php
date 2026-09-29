@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\DefaultRole;
 use App\Models\AuditLog;
 use App\Models\Branch;
 use App\Models\BranchUser;
@@ -48,6 +49,10 @@ class CreateStaffAction
 
         if ($roles->count() !== count(array_unique($attributes['role_ids']))) {
             throw ValidationException::withMessages(['role_ids' => 'One or more roles are invalid.']);
+        }
+
+        if ($roles->contains('slug', DefaultRole::Owner->value) && ! $actor->is_super_admin) {
+            throw ValidationException::withMessages(['role_ids' => 'Only a Super Admin can assign the Shop Owner role.']);
         }
 
         if (User::query()->where('email', $attributes['email'])->exists()) {

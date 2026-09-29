@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Log;
 
 class SewmrSmsService
 {
-    public function sendStaffCredentials(User $staff, Business $business, string $plainTextPassword): void
+    public function sendStaffCredentials(User $staff, Business $business, string $plainTextPassword): bool
     {
         $role = $staff->roles->firstWhere('pivot.business_id', $business->id)?->name ?? 'Staff';
 
-        $this->send($staff, sprintf(
+        return $this->send($staff, sprintf(
             "Welcome to HardFlow!\n\nCompany: %s\n\nUsername: %s\n\nPhone: %s\n\nRole: %s\n\nTemporary Password: %s\n\nLogin: %s/login\n\nPlease change your password after login.",
             $business->name,
             $staff->username ?? $staff->email,
@@ -26,19 +26,19 @@ class SewmrSmsService
         ), 'staff credentials');
     }
 
-    public function sendPasswordReset(User $staff, string $plainTextPassword): void
+    public function sendPasswordReset(User $staff, string $plainTextPassword): bool
     {
-        $this->send($staff, sprintf(
+        return $this->send($staff, sprintf(
             'Your HardFlow password has been reset. Username: %s Temporary Password: %s Please sign in, then change your password from your profile.',
             $staff->username ?? $staff->email,
             $plainTextPassword,
         ), 'password reset');
     }
 
-    private function send(User $staff, string $message, string $purpose): void
+    private function send(User $staff, string $message, string $purpose): bool
     {
         if (! config('sms.enabled') || blank(config('sms.token')) || blank($staff->phone)) {
-            return;
+            return false;
         }
 
         try {
@@ -59,7 +59,11 @@ class SewmrSmsService
                     'phone' => $staff->phone,
                     'status' => $response->status(),
                 ]);
+
+                return false;
             }
+
+            return true;
         } catch (ConnectionException $exception) {
             Log::warning('SMS notification request failed.', [
                 'purpose' => $purpose,
@@ -67,6 +71,8 @@ class SewmrSmsService
                 'phone' => $staff->phone,
                 'error' => $exception->getMessage(),
             ]);
+
+            return false;
         }
     }
 }

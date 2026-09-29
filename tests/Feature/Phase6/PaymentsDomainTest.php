@@ -17,6 +17,7 @@ use App\Actions\RecordCustomerPaymentAction;
 use App\Actions\RecordSalePaymentAction;
 use App\Actions\RequestAccountTransferAction;
 use App\Actions\ReverseCustomerPaymentAction;
+use App\Models\Branch;
 use App\Models\BusinessSetting;
 use App\Models\PaymentAccount;
 use App\Models\PaymentMethod;
@@ -24,6 +25,7 @@ use App\Models\StockBalance;
 use App\Models\Unit;
 use App\Models\User;
 use App\Support\TenantContext;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -106,6 +108,34 @@ class PaymentsDomainTest extends TestCase
         $business->update(['locale' => 'sw']);
         $this->actingAs($owner)->withSession($session)->get(route('owner.payments.receipt', $payment))->assertOk()->assertSeeText('Malipo yamekamilika')->assertSeeText('IMELIPWA');
         $this->actingAs($owner)->withSession($session)->get(route('owner.sales.print', $sale))->assertOk()->assertSeeText('Mteja')->assertSeeText('Chapisha');
+    }
+
+    public function test_branch_specific_payment_accounts_cannot_be_used_from_another_branch(): void
+    {
+        [$business, $owner, $productUnit, $level] = $this->fixture();
+        $sale = app(CreateSaleAction::class)->execute($owner, $business, ['branch_id' => $business->branches->first()->id, 'walk_in_name' => 'Walk-in Builder', 'sale_date' => now()->toDateString(), 'items' => [['product_unit_id' => $productUnit->id, 'price_level_id' => $level->id, 'quantity' => '1', 'applied_unit_price' => '150']]]);
+        app(ConfirmSaleAction::class)->execute($owner, $sale);
+        $otherBranch = Branch::query()->create(['business_id' => $business->id, 'name' => 'Other Branch', 'code' => 'OTHER']);
+        $method = PaymentMethod::query()->where('business_id', $business->id)->where('type', 'cash')->firstOrFail();
+        $otherAccount = PaymentAccount::query()->create(['business_id' => $business->id, 'branch_id' => $otherBranch->id, 'payment_method_id' => $method->id, 'name' => 'Other Till']);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(RecordSalePaymentAction::class)->execute($owner, $sale, $otherAccount, '150');
+    }
+
+    public function test_branch_specific_transfer_accounts_cannot_be_used_from_another_branch(): void
+    {
+        [$business, $owner] = $this->fixture();
+        $currentBranch = $business->branches->first();
+        $otherBranch = Branch::query()->create(['business_id' => $business->id, 'name' => 'Other Branch', 'code' => 'OTHER']);
+        $method = PaymentMethod::query()->where('business_id', $business->id)->where('type', 'cash')->firstOrFail();
+        $currentAccount = PaymentAccount::query()->create(['business_id' => $business->id, 'branch_id' => $currentBranch->id, 'payment_method_id' => $method->id, 'name' => 'Current Till']);
+        $otherAccount = PaymentAccount::query()->create(['business_id' => $business->id, 'branch_id' => $otherBranch->id, 'payment_method_id' => $method->id, 'name' => 'Other Till']);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(RequestAccountTransferAction::class)->execute($owner, $currentAccount, $otherAccount, '100', 'Attempted cross-branch transfer');
     }
 
     public function test_customer_statement_uses_the_business_locale_and_currency(): void
