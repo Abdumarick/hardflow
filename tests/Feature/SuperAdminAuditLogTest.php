@@ -12,7 +12,7 @@ class SuperAdminAuditLogTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_super_admin_can_view_all_non_super_admin_audit_logs_but_not_super_admin_activity(): void
+    public function test_super_admin_can_view_every_audit_log_including_super_admin_activity(): void
     {
         $superAdmin = User::factory()->superAdmin()->create();
         $owner = User::factory()->create();
@@ -26,7 +26,7 @@ class SuperAdminAuditLogTest extends TestCase
             ->assertSeeText('Sale Created')
             ->assertSeeText('203.0.113.15')
             ->assertSeeText('HardFlow Browser Test')
-            ->assertDontSeeText('Platform Business Reviewed');
+            ->assertSeeText('Platform Business Reviewed');
     }
 
     public function test_business_audit_view_hides_super_admin_activity(): void

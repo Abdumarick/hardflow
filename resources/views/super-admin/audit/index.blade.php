@@ -4,7 +4,7 @@
             <div>
                 <p class="text-xs font-bold uppercase tracking-[.2em] text-blue-700">Platform administration</p>
                 <h1 class="mt-1 text-2xl font-black text-slate-950">All audit logs</h1>
-                <p class="mt-1 text-sm text-slate-500">Review activity across every business workspace.</p>
+                <p class="mt-1 text-sm text-slate-500">Review every platform and business activity record.</p>
             </div>
             <a href="{{ route('super-admin.businesses.index') }}" class="rounded-xl border bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">Manage businesses</a>
         </div>

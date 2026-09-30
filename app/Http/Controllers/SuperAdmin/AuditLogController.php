@@ -16,7 +16,6 @@ class AuditLogController extends Controller
 
         $query = AuditLog::query()
             ->with(['business', 'branch', 'user'])
-            ->whereDoesntHave('user', fn ($user) => $user->where('is_super_admin', true))
             ->latest();
 
         if ($request->filled('business')) {
