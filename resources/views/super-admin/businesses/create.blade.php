@@ -11,15 +11,23 @@
             @csrf
             <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-slate-900">Business details</h2>
+                <p class="mt-1 text-sm text-slate-500"><span class="font-semibold text-red-600">Required</span> fields must be completed. <span class="font-semibold text-slate-500">Optional</span> fields can be added later.</p>
                 <div class="mt-5 grid gap-5 sm:grid-cols-2">
                     @foreach (['name' => 'Business name', 'code' => 'Business code', 'phone' => 'Phone', 'email' => 'Email', 'tin' => 'TIN', 'vrn' => 'VRN'] as $field => $label)
-                        <label class="block text-sm font-medium text-slate-700">{{ $label }}
-                            <input name="{{ $field }}" value="{{ old($field) }}" @required(in_array($field, ['name', 'code'])) class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                        @php($isRequired = in_array($field, ['name', 'code']))
+                        <label class="block text-sm font-medium text-slate-700">
+                            <span class="flex items-center justify-between gap-2">
+                                <span>{{ $label }}</span>
+                                <span class="text-xs font-semibold {{ $isRequired ? 'text-red-600' : 'text-slate-400' }}">{{ $isRequired ? 'Required' : 'Optional' }}</span>
+                            </span>
+                            <input type="{{ $field === 'email' ? 'email' : 'text' }}" name="{{ $field }}" value="{{ old($field) }}" @required($isRequired) class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
                             @error($field)<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                         </label>
                     @endforeach
-                    <label class="block text-sm font-medium text-slate-700 sm:col-span-2">Address
+                    <label class="block text-sm font-medium text-slate-700 sm:col-span-2">
+                        <span class="flex items-center justify-between gap-2"><span>Address</span><span class="text-xs font-semibold text-slate-400">Optional</span></span>
                         <textarea name="address" rows="2" class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">{{ old('address') }}</textarea>
+                        @error('address')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
                 </div>
             </section>
@@ -27,11 +35,13 @@
             <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-slate-900">Main branch</h2>
                 <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                    <label class="block text-sm font-medium text-slate-700">Branch name
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Branch name</span><span class="text-xs font-semibold text-red-600">Required</span></span>
                         <input name="branch_name" value="{{ old('branch_name', 'Main Branch') }}" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                        @error('branch_name')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
-                    <label class="block text-sm font-medium text-slate-700">Branch code
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Branch code</span><span class="text-xs font-semibold text-red-600">Required</span></span>
                         <input name="branch_code" value="{{ old('branch_code', 'MAIN') }}" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                        @error('branch_code')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
                 </div>
             </section>
@@ -39,16 +49,20 @@
             <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-slate-900">Shop owner</h2>
                 <div class="mt-5 grid gap-5 sm:grid-cols-2">
-                    <label class="block text-sm font-medium text-slate-700">Owner name
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Owner name</span><span class="text-xs font-semibold text-red-600">Required</span></span>
                         <input name="owner_name" value="{{ old('owner_name') }}" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                        @error('owner_name')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
-                    <label class="block text-sm font-medium text-slate-700">Owner email
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Owner email</span><span class="text-xs font-semibold text-red-600">Required</span></span>
                         <input type="email" name="owner_email" value="{{ old('owner_email') }}" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                        @error('owner_email')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
-                    <label class="block text-sm font-medium text-slate-700">Temporary password
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Temporary password</span><span class="text-xs font-semibold text-red-600">Required</span></span>
                         <input type="password" name="owner_password" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                        <span class="mt-1 block text-xs text-slate-500">Use at least 8 characters.</span>
+                        @error('owner_password')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
-                    <label class="block text-sm font-medium text-slate-700">Confirm password
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Confirm password</span><span class="text-xs font-semibold text-red-600">Required</span></span>
                         <input type="password" name="owner_password_confirmation" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
                     </label>
                 </div>
