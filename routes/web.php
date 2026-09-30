@@ -7,6 +7,7 @@ use App\Http\Controllers\Owner\CustomerController;
 use App\Http\Controllers\Owner\ExpenseController;
 use App\Http\Controllers\Owner\GovernanceController;
 use App\Http\Controllers\Owner\InventoryController;
+use App\Http\Controllers\Owner\InvoiceController;
 use App\Http\Controllers\Owner\PaymentController;
 use App\Http\Controllers\Owner\PurchaseController;
 use App\Http\Controllers\Owner\ReportController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Owner\RoleController;
 use App\Http\Controllers\Owner\SalesController;
 use App\Http\Controllers\Owner\SettingsController;
 use App\Http\Controllers\Owner\StaffController;
+use App\Http\Controllers\SuperAdmin\AuditLogController as SuperAdminAuditLogController;
 use App\Http\Controllers\SuperAdmin\BusinessController;
 use App\Http\Controllers\TenantSelectionController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +42,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::post('tenant/{business}', TenantSelectionController::class)->name('tenant.select');
 
     Route::middleware('can:platform.manage-businesses')->prefix('admin')->name('super-admin.')->group(function () {
+        Route::get('audit-logs', [SuperAdminAuditLogController::class, 'index'])->name('audit.index');
         Route::get('businesses', [BusinessController::class, 'index'])->name('businesses.index');
         Route::get('businesses/create', [BusinessController::class, 'create'])->name('businesses.create');
         Route::post('businesses', [BusinessController::class, 'store'])->name('businesses.store');
@@ -97,6 +100,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::put('purchases/returns/{return}/decision', [PurchaseController::class, 'decideReturn'])->name('purchases.returns.decision');
         Route::post('purchases/suppliers/{supplier}/payments', [PurchaseController::class, 'recordPayment'])->name('purchases.suppliers.payments.store');
         Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
+        Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+        Route::get('invoices/{sale}', [InvoiceController::class, 'show'])->name('invoices.show');
+        Route::get('invoices/{sale}/print', [InvoiceController::class, 'print'])->name('invoices.print');
         Route::post('sales/{sale}/borrow-neighbour-stock', [SalesController::class, 'borrowNeighbourStock'])->name('sales.borrow-neighbour-stock');
         Route::post('sales/neighbour-borrows/{borrow}/return', [SalesController::class, 'returnNeighbourStock'])->name('sales.neighbour-borrows.return');
         Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');

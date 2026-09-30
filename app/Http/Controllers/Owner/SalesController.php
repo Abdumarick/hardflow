@@ -51,15 +51,19 @@ class SalesController extends Controller
         })->filter(fn ($item) => $item['price_level_id'] !== null))->values();
         $perPage = in_array((int) $request->integer('per_page', 9), [6, 9, 12, 24], true) ? (int) $request->integer('per_page', 9) : 9;
         $saleSearch = trim((string) $request->input('sale_search'));
+        $salesFilter = in_array($request->string('sales_filter')->toString(), ['draft', 'pending'], true) ? $request->string('sales_filter')->toString() : null;
         $sales = Sale::query()->where('branch_id', $branch->id)
             ->with(['customer', 'items.product', 'items.productUnit.unit', 'releases.items'])
             ->when($saleSearch !== '', fn ($query) => $query->where(fn ($query) => $query->where('sale_number', 'like', "%{$saleSearch}%")->orWhere('walk_in_name', 'like', "%{$saleSearch}%")->orWhereHas('customer', fn ($customer) => $customer->where('name', 'like', "%{$saleSearch}%"))))
+            ->when($salesFilter === 'draft', fn ($query) => $query->where('status', 'draft'))
+            ->when($salesFilter === 'pending', fn ($query) => $query->where('status', 'confirmed')->where(fn ($pending) => $pending->whereIn('payment_status', ['unpaid', 'partially_paid'])->orWhereIn('fulfillment_status', ['on_hold', 'partially_released'])))
             ->when($request->filled('sale_status'), fn ($query) => $query->where('status', $request->input('sale_status')))
             ->when($request->filled('fulfillment_status'), fn ($query) => $query->where('fulfillment_status', $request->input('fulfillment_status')))
             ->latest()->paginate($perPage)->withQueryString();
 
         return view('owner.sales.index', [
             'business' => $business, 'branch' => $branch,
+            'salesFilter' => $salesFilter,
             'customers' => Customer::query()->where('business_id', $business->id)->orderBy('name')->get(),
             'products' => $products, 'posProducts' => $posProducts, 'categories' => $posProducts->pluck('category')->unique()->sort()->values(),
             'sales' => $sales,

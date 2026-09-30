@@ -25,6 +25,10 @@
                     <p class="mt-3 text-3xl font-black">{{ $currentBusiness->currency }} {{ number_format($dashboardData['salesTotal'], 2) }}</p>
                     <p class="mt-2 text-xs text-slate-500">{{ __('dashboard.confirmed_period') }}</p>
                 </div>
+                @if($dashboardData['canViewSales'])
+                    <a href="{{ route('owner.sales.index', ['screen' => 'history', 'sales_filter' => 'draft']) }}" class="rounded-2xl border border-amber-100 bg-amber-50 p-5 shadow-sm transition hover:border-amber-300 hover:shadow-md"><p class="text-xs font-bold uppercase tracking-wider text-amber-800">Draft sales</p><p class="mt-3 text-2xl font-black text-amber-950">{{ $dashboardData['draftSalesCount'] }}</p><p class="mt-2 text-xs text-amber-700">Open direct-sale drafts. View details →</p></a>
+                    <a href="{{ route('owner.sales.index', ['screen' => 'history', 'sales_filter' => 'pending']) }}" class="rounded-2xl border border-blue-100 bg-blue-50 p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"><p class="text-xs font-bold uppercase tracking-wider text-blue-800">Pending sales</p><p class="mt-3 text-2xl font-black text-blue-950">{{ $dashboardData['pendingSalesCount'] }}</p><p class="mt-2 text-xs text-blue-700">Payment or goods release still pending. View details →</p></a>
+                @endif
                 @foreach ([[__('dashboard.gross_profit'), $dashboardData['grossProfit'], 'text-emerald-600'], [__('dashboard.expenses'), $dashboardData['expenses'], 'text-rose-600'], [__('dashboard.outstanding_debt'), $dashboardData['debt'], 'text-amber-600'], [__('dashboard.stock_value'), $dashboardData['stockValue'], 'text-slate-950'], [__('dashboard.account_balance'), $dashboardData['cashBalance'], 'text-emerald-600']] as [$label, $amount, $colour])
                     <div class="rounded-2xl border bg-white p-5 shadow-sm"><p class="text-xs font-bold uppercase tracking-wider text-slate-500">{{ $label }}</p><p class="mt-3 text-xl font-black {{ $colour }}">{{ $currentBusiness->currency }} {{ number_format($amount, 2) }}</p></div>
                 @endforeach

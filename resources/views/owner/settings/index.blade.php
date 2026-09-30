@@ -9,7 +9,7 @@
 
     @php
         $field = 'mt-1 block w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500';
-        $tabs = ['company' => __('settings.company'), 'operations' => __('settings.operations'), 'branches' => __('settings.branches')];
+        $tabs = ['company' => __('settings.company'), 'operations' => __('settings.operations'), 'invoices' => 'Invoices', 'branches' => __('settings.branches')];
     @endphp
 
     <div class="space-y-5 py-6">
@@ -70,6 +70,19 @@
                     </div>
                 </section>
                 <div class="flex justify-end"><button class="rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white hover:bg-blue-800">Save operating rules</button></div>
+            </form>
+        @elseif($tab === 'invoices')
+            <form method="POST" action="{{ route('owner.settings.business.update') }}" class="space-y-5">
+                @csrf @method('PUT')
+                <section class="rounded-2xl border bg-white p-5 shadow-sm">
+                    <p class="text-xs font-bold uppercase tracking-widest text-blue-700">Invoice design</p><h2 class="mt-1 text-xl font-black text-slate-950">Choose the invoice your customers receive</h2><p class="mt-2 text-sm text-slate-500">This design is used in the invoice centre and when printing or saving an invoice before payment.</p>
+                    <div class="mt-5 grid gap-4 lg:grid-cols-3">
+                        @foreach(['classic' => ['Classic', 'Clean, detailed, and based on the sample invoice.'], 'modern' => ['Modern', 'Strong business header and clear status treatment.'], 'compact' => ['Compact', 'A tighter layout for shorter invoices and mobile printing.']] as $value => [$label, $description])
+                            <label @class(['cursor-pointer rounded-2xl border-2 p-4 transition', 'border-blue-700 bg-blue-50' => old('invoice_template', $settings->get('invoice_template', 'classic')) === $value, 'border-slate-200 bg-white hover:border-blue-300' => old('invoice_template', $settings->get('invoice_template', 'classic')) !== $value])><input class="sr-only" type="radio" name="invoice_template" value="{{ $value }}" @checked(old('invoice_template', $settings->get('invoice_template', 'classic')) === $value)><span class="block text-lg font-black">{{ $label }}</span><span class="mt-2 block text-sm text-slate-500">{{ $description }}</span><span class="mt-5 block rounded-lg p-3 text-xs font-bold {{ $value === 'modern' ? 'bg-slate-900 text-white' : ($value === 'compact' ? 'border bg-white text-slate-700' : 'bg-slate-100 text-slate-800') }}">{{ $business->name }} · INVOICE</span></label>
+                        @endforeach
+                    </div>
+                </section>
+                <div class="flex justify-end"><button class="rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white hover:bg-blue-800">Save invoice design</button></div>
             </form>
         @else
             <div class="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">Branches inherit global settings unless an override is enabled. Identity fields always remain branch-specific.</div>

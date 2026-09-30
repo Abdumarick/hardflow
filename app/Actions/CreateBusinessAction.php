@@ -128,7 +128,7 @@ class CreateBusinessAction
                 PriceLevel::query()->create(['business_id' => $business->id, 'name' => $name, 'code' => $levelCode, 'is_default' => $isDefault, 'is_system' => true]);
             }
 
-            foreach ([['Cash', AccountType::Cash, false], ['Mobile Money', AccountType::MobileMoney, true], ['Bank Transfer', AccountType::Bank, true], ['Card', AccountType::Card, true]] as [$name, $type, $requiresReference]) {
+            foreach ([['Cash', AccountType::Cash, false], ['Lipa kwa M-Pesa', AccountType::MobileMoney, true], ['Airtel Money', AccountType::MobileMoney, true], ['Tigo Pesa', AccountType::MobileMoney, true], ['HaloPesa', AccountType::MobileMoney, true], ['Other Mobile Money', AccountType::MobileMoney, true], ['Bank Transfer', AccountType::Bank, true], ['Card', AccountType::Card, true]] as [$name, $type, $requiresReference]) {
                 PaymentMethod::query()->create(['business_id' => $business->id, 'name' => $name, 'type' => $type, 'requires_reference' => $requiresReference]);
             }
 
@@ -180,6 +180,7 @@ class CreateBusinessAction
             'locale' => $business->locale,
             'allow_selling_below_cost' => false,
             'credit_limit_policy' => 'block',
+            'invoice_template' => 'classic',
         ];
     }
 }

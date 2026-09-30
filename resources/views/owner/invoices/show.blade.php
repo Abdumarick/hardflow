@@ -1,0 +1,4 @@
+<x-app-layout>
+    <x-slot name="header"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-widest text-blue-700">Invoice centre</p><h1 class="mt-1 text-2xl font-black text-slate-950">{{ $sale->sale_number }}</h1></div><div class="flex gap-2"><a href="{{ route('owner.invoices.index') }}" class="rounded-xl border bg-white px-4 py-2 text-sm font-bold text-slate-700">Back to invoices</a><a target="_blank" href="{{ route('owner.invoices.print', $sale) }}" class="rounded-xl bg-blue-700 px-4 py-2 text-sm font-bold text-white">Print / download</a></div></div></x-slot>
+    <div class="mx-auto max-w-6xl px-3 py-5 sm:px-5"><div class="rounded-2xl border bg-white p-3 shadow-sm sm:p-7"><x-invoice.document :sale="$sale" :business="$business" :branch="$branch" :accounts="$accounts" :template="$template" /></div></div>
+</x-app-layout>

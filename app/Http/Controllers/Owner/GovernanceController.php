@@ -91,7 +91,11 @@ class GovernanceController extends Controller
     {
         $business = $tenant->businessOrFail();
         abort_unless($request->user()->hasPermissionInBusiness(PermissionName::AuditView, $business), 403);
-        $query = AuditLog::query()->where('business_id', $business->id)->with(['user', 'branch'])->latest();
+        $query = AuditLog::query()
+            ->where('business_id', $business->id)
+            ->whereDoesntHave('user', fn ($user) => $user->where('is_super_admin', true))
+            ->with(['user', 'branch'])
+            ->latest();
         if ($request->filled('action')) {
             $query->where('action', 'like', '%'.$request->string('action').'%');
         }

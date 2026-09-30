@@ -54,6 +54,7 @@ class DashboardController extends Controller
             $dashboardModules = collect([
                 ['group' => __('ui.operations'), 'label' => __('ui.dashboard'), 'route' => 'dashboard', 'icon' => 'D', 'visible' => true],
                 ['group' => __('ui.operations'), 'label' => __('ui.sales'), 'route' => 'owner.sales.index', 'icon' => 'S', 'visible' => $can(PermissionName::SalesView)],
+                ['group' => __('ui.operations'), 'label' => 'Invoices', 'route' => 'owner.invoices.index', 'icon' => 'I', 'visible' => $can(PermissionName::SalesView)],
                 ['group' => __('ui.operations'), 'label' => 'Customers', 'route' => 'owner.customers.index', 'icon' => 'C', 'visible' => $can(PermissionName::CustomersView)],
                 ['group' => __('ui.inventory'), 'label' => __('ui.products'), 'route' => 'owner.catalogue.index', 'icon' => 'P', 'visible' => $can(PermissionName::ProductsView)],
                 ['group' => __('ui.inventory'), 'label' => __('ui.inventory'), 'route' => 'owner.inventory.index', 'icon' => 'I', 'visible' => $can(PermissionName::InventoryView)],
@@ -86,7 +87,11 @@ class DashboardController extends Controller
             $trendDays = collect(range(6, 0))->map(fn ($days) => now()->subDays($days))->map(fn ($date) => ['label' => $date->format('D'), 'amount' => (float) ($trend[$date->toDateString()] ?? 0)]);
             $stockValue = StockBalance::query()->where('branch_id', $currentBranch->id)->where('stock_status', 'available')->selectRaw('COALESCE(SUM(quantity * average_cost), 0) as value')->value('value');
             $debt = DB::table('customer_ledger_entries')->where('business_id', $currentBusiness->id)->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as balance')->value('balance');
-            $dashboardData = ['range' => $range, 'salesTotal' => (clone $salesQuery)->sum('total_amount'), 'salesCount' => (clone $salesQuery)->count(), 'grossProfit' => $grossProfit, 'expenses' => Expense::query()->where('branch_id', $currentBranch->id)->where('status', 'posted')->where('expense_date', '>=', $from)->sum('amount'), 'debt' => max(0, (float) $debt), 'stockValue' => $stockValue, 'lowStock' => $lowStock, 'canViewApprovals' => $canViewApprovals, 'pendingApprovals' => $canViewApprovals ? ApprovalRequest::query()->where('business_id', $currentBusiness->id)->where('status', 'pending')->count() : null, 'cashBalance' => $cashBalance, 'recentSales' => Sale::query()->where('branch_id', $currentBranch->id)->with('customer')->withCount('items')->latest()->limit(6)->get(), 'trend' => $trendDays];
+            $draftSales = Sale::query()->where('branch_id', $currentBranch->id)->where('status', 'draft');
+            $pendingSales = Sale::query()->where('branch_id', $currentBranch->id)
+                ->where('status', 'confirmed')
+                ->where(fn ($query) => $query->whereIn('payment_status', ['unpaid', 'partially_paid'])->orWhereIn('fulfillment_status', ['on_hold', 'partially_released']));
+            $dashboardData = ['range' => $range, 'salesTotal' => (clone $salesQuery)->sum('total_amount'), 'salesCount' => (clone $salesQuery)->count(), 'grossProfit' => $grossProfit, 'expenses' => Expense::query()->where('branch_id', $currentBranch->id)->where('status', 'posted')->where('expense_date', '>=', $from)->sum('amount'), 'debt' => max(0, (float) $debt), 'stockValue' => $stockValue, 'lowStock' => $lowStock, 'canViewSales' => $can(PermissionName::SalesView), 'draftSalesCount' => $can(PermissionName::SalesView) ? $draftSales->count() : null, 'pendingSalesCount' => $can(PermissionName::SalesView) ? $pendingSales->count() : null, 'canViewApprovals' => $canViewApprovals, 'pendingApprovals' => $canViewApprovals ? ApprovalRequest::query()->where('business_id', $currentBusiness->id)->where('status', 'pending')->count() : null, 'cashBalance' => $cashBalance, 'recentSales' => Sale::query()->where('branch_id', $currentBranch->id)->with('customer')->withCount('items')->latest()->limit(6)->get(), 'trend' => $trendDays];
         }
 
         return view('dashboard', [

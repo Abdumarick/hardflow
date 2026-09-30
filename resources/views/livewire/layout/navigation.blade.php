@@ -50,7 +50,10 @@ new class extends Component
             [__('ui.profile'), 'profile', 'profile', true, 'P'],
         ],
     ];
-    if ($user->is_super_admin) array_unshift($groups[__('ui.management')], [__('ui.businesses'), 'super-admin.businesses.index', 'super-admin.*', true, 'B']);
+    if ($user->is_super_admin) {
+        array_unshift($groups[__('ui.management')], ['All audit logs', 'super-admin.audit.index', 'super-admin.audit.*', true, 'A']);
+        array_unshift($groups[__('ui.management')], [__('ui.businesses'), 'super-admin.businesses.index', 'super-admin.businesses.*', true, 'B']);
+    }
     $openGroups = collect($groups)->mapWithKeys(fn ($items, $group) => [$group => collect($items)->contains(fn ($item) => request()->routeIs($item[2]))]);
     $pendingApprovals = $business ? \App\Models\ApprovalRequest::query()->where('business_id', $business->id)->where('status', 'pending')->count() : 0;
     $unreadNotifications = $business ? $user->unreadNotifications()->where('data->business_id', $business->id)->count() : 0;

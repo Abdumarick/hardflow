@@ -22,7 +22,7 @@ class SettingsController extends Controller
 
         return view('owner.settings.index', [
             'business' => $business->load(['settings', 'branches.settings']),
-            'tab' => in_array($request->string('tab')->toString(), ['company', 'operations', 'branches'], true) ? $request->string('tab')->toString() : 'company',
+            'tab' => in_array($request->string('tab')->toString(), ['company', 'operations', 'invoices', 'branches'], true) ? $request->string('tab')->toString() : 'company',
             'settings' => $business->settings->pluck('value', 'key'),
             'paymentMethods' => PaymentMethod::query()->where('business_id', $business->id)->where('is_active', true)->orderBy('name')->get(),
         ]);
@@ -47,6 +47,7 @@ class SettingsController extends Controller
             'vat_rate' => ['sometimes', 'required', 'numeric', 'between:0,100'],
             'prices_include_tax' => ['sometimes', 'required', 'boolean'],
             'allow_selling_below_cost' => ['sometimes', 'required', 'boolean'],
+            'invoice_template' => ['sometimes', 'required', Rule::in(['classic', 'modern', 'compact'])],
         ]);
         $update->updateBusiness($request->user(), $business, $data);
 

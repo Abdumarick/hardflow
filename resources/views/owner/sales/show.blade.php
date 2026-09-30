@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div><p class="text-xs font-bold uppercase tracking-widest text-blue-700">Sales / POS</p><h1 class="mt-1 text-2xl font-bold">Sale {{ $sale->sale_number }}</h1></div>
-            <a href="{{ route('owner.sales.index') }}" class="rounded-lg border bg-white px-4 py-2 text-sm font-bold text-slate-700">Back to sales</a>
+            <div class="flex gap-2"><a href="{{ route('owner.invoices.show', $sale) }}" class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white">View invoice</a><a href="{{ route('owner.sales.index') }}" class="rounded-lg border bg-white px-4 py-2 text-sm font-bold text-slate-700">Back to sales</a></div>
         </div>
     </x-slot>
 
@@ -57,7 +57,7 @@
             </section>
         @else
             <section class="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
-                <div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-lg font-bold text-emerald-700">Sale complete</h2><p class="mt-1 text-sm text-slate-500">Payment status: <span class="font-semibold uppercase">{{ str($sale->payment_status->value)->replace('_', ' ') }}</span></p></div><a target="_blank" href="{{ route('owner.sales.print', $sale) }}" class="rounded-lg border px-4 py-2 text-sm font-bold">Print sale</a></div>
+                <div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-lg font-bold text-emerald-700">Sale complete</h2><p class="mt-1 text-sm text-slate-500">Payment status: <span class="font-semibold uppercase">{{ str($sale->payment_status->value)->replace('_', ' ') }}</span></p></div><a target="_blank" href="{{ route('owner.invoices.print', $sale) }}" class="rounded-lg border px-4 py-2 text-sm font-bold">Print invoice</a></div>
                 @if($sale->paymentAllocations->isNotEmpty())<div class="mt-4 divide-y rounded-lg border">@foreach($sale->paymentAllocations as $allocation)<div class="flex justify-between p-3 text-sm"><span>{{ $allocation->payment->account->method->name }} · {{ $allocation->payment->account->name }}</span><strong>{{ $business->currency }} {{ number_format((float) $allocation->amount, 2) }}</strong></div>@endforeach</div>@endif
             </section>
 
