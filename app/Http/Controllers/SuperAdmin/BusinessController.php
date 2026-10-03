@@ -7,6 +7,7 @@ use App\Actions\DisableBusinessAction;
 use App\Http\Controllers\Controller;
 use App\Models\Business;
 use App\Models\User;
+use App\Support\PhoneNumber;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,13 +46,23 @@ class BusinessController extends Controller
             'tin' => ['nullable', 'string', 'max:50'],
             'vrn' => ['nullable', 'string', 'max:50'],
             'owner_name' => ['required', 'string', 'max:255'],
-            'owner_email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'owner_email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')],
+            'owner_phone' => ['required', 'string', 'max:30'],
             'owner_password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        $data['owner_phone'] = PhoneNumber::normalize($data['owner_phone']);
+        if ($data['owner_phone'] === null) {
+            return back()->withInput()->withErrors(['owner_phone' => 'Enter a valid Tanzanian phone number after the 255 prefix.']);
+        }
+        if (User::query()->where('phone', $data['owner_phone'])->exists()) {
+            return back()->withInput()->withErrors(['owner_phone' => 'This phone number is already in use.']);
+        }
+
         $owner = User::query()->create([
             'name' => $data['owner_name'],
-            'email' => $data['owner_email'],
+            'email' => $data['owner_email'] ?? null,
+            'phone' => $data['owner_phone'],
             'password' => $data['owner_password'],
         ]);
 

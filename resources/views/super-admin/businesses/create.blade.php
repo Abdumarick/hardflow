@@ -53,8 +53,14 @@
                         <input name="owner_name" value="{{ old('owner_name') }}" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
                         @error('owner_name')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
-                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Owner email</span><span class="text-xs font-semibold text-red-600">Required</span></span>
-                        <input type="email" name="owner_email" value="{{ old('owner_email') }}" required class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Owner phone number</span><span class="text-xs font-semibold text-red-600">Required</span></span>
+                        <div class="mt-1.5 flex rounded-lg shadow-sm"><span class="inline-flex items-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm font-semibold text-slate-600">+255</span><input type="tel" name="owner_phone" value="{{ old('owner_phone') }}" required inputmode="numeric" autocomplete="tel-national" pattern="[0-9]{9}" maxlength="9" placeholder="712 345 678" class="min-w-0 flex-1 rounded-r-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700"></div>
+                        <span class="mt-1 block text-xs text-slate-500">Enter the remaining 9 digits. This number is used for SMS and can be used to log in.</span>
+                        @error('owner_phone')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
+                    </label>
+                    <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Owner email</span><span class="text-xs font-semibold text-slate-400">Optional</span></span>
+                        <input type="email" name="owner_email" value="{{ old('owner_email') }}" autocomplete="email" class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                        <span class="mt-1 block text-xs text-slate-500">Email can also be used to log in if provided.</span>
                         @error('owner_email')<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                     </label>
                     <label class="block text-sm font-medium text-slate-700"><span class="flex items-center justify-between gap-2"><span>Temporary password</span><span class="text-xs font-semibold text-red-600">Required</span></span>

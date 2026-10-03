@@ -46,7 +46,7 @@ class CreateBusinessActionTest extends TestCase
             $this->assertTrue($owner->hasActiveMembership($business));
             $this->assertTrue($owner->hasActiveBranchAccess($business->branches->first()));
             $this->assertCount(count(DefaultRole::cases()), $business->roles);
-            $this->assertEqualsCanonicalizing(['allow_selling_below_cost', 'credit_limit_policy', 'currency', 'locale', 'timezone'], $business->settings->pluck('key')->all());
+            $this->assertEqualsCanonicalizing(['allow_selling_below_cost', 'credit_limit_policy', 'currency', 'invoice_template', 'locale', 'timezone'], $business->settings->pluck('key')->all());
             $this->assertDatabaseCount('number_sequences', 10);
             $this->assertTrue($owner->hasPermissionInBusiness(PermissionName::UsersManageRoles, $business));
         }
