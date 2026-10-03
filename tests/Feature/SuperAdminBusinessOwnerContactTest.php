@@ -19,6 +19,7 @@ class SuperAdminBusinessOwnerContactTest extends TestCase
             'code' => 'PHONEFIRST',
             'branch_name' => 'Main Branch',
             'branch_code' => 'MAIN',
+            'phone' => '712345679',
             'owner_name' => 'Asha Owner',
             'owner_phone' => '712345678',
             'owner_password' => 'secure-password',
@@ -26,6 +27,7 @@ class SuperAdminBusinessOwnerContactTest extends TestCase
         ])->assertRedirect();
 
         $this->assertDatabaseHas('users', ['name' => 'Asha Owner', 'phone' => '255712345678', 'email' => null]);
+        $this->assertDatabaseHas('businesses', ['name' => 'Phone First Hardware', 'phone' => '255712345679']);
     }
 
     public function test_owner_phone_is_required_and_email_is_not(): void

@@ -55,6 +55,12 @@ class BusinessController extends Controller
         if ($data['owner_phone'] === null) {
             return back()->withInput()->withErrors(['owner_phone' => 'Enter a valid Tanzanian phone number after the 255 prefix.']);
         }
+        if (filled($data['phone'] ?? null)) {
+            $data['phone'] = PhoneNumber::normalize($data['phone']);
+            if ($data['phone'] === null) {
+                return back()->withInput()->withErrors(['phone' => 'Enter a valid Tanzanian phone number after the 255 prefix.']);
+            }
+        }
         if (User::query()->where('phone', $data['owner_phone'])->exists()) {
             return back()->withInput()->withErrors(['owner_phone' => 'This phone number is already in use.']);
         }

@@ -20,7 +20,12 @@
                                 <span>{{ $label }}</span>
                                 <span class="text-xs font-semibold {{ $isRequired ? 'text-red-600' : 'text-slate-400' }}">{{ $isRequired ? 'Required' : 'Optional' }}</span>
                             </span>
-                            <input type="{{ $field === 'email' ? 'email' : 'text' }}" name="{{ $field }}" value="{{ old($field) }}" @required($isRequired) class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                            @if($field === 'phone')
+                                <div class="mt-1.5 flex rounded-lg shadow-sm"><span class="inline-flex items-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm font-semibold text-slate-600">+255</span><input type="tel" name="phone" value="{{ old('phone') }}" inputmode="numeric" autocomplete="tel-national" pattern="[0-9]{9}" maxlength="9" placeholder="712 345 678" class="min-w-0 flex-1 rounded-r-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700"></div>
+                                <span class="mt-1 block text-xs text-slate-500">Enter the remaining 9 digits if you want the business phone shown on invoices.</span>
+                            @else
+                                <input type="{{ $field === 'email' ? 'email' : 'text' }}" name="{{ $field }}" value="{{ old($field) }}" @required($isRequired) class="mt-1.5 w-full rounded-lg border-slate-300 focus:border-blue-700 focus:ring-blue-700">
+                            @endif
                             @error($field)<span class="mt-1 block text-xs text-red-600">{{ $message }}</span>@enderror
                         </label>
                     @endforeach
