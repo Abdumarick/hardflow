@@ -40,9 +40,6 @@ jobs:
         continue-on-error: true
         run: vendor/bin/pint --test
 
-      - name: Execute tests
-        run: php artisan test
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -54,6 +51,9 @@ jobs:
 
       - name: Build frontend assets
         run: npm run build
+
+      - name: Execute tests
+        run: php artisan test
 
   deploy-production:
     name: Deploy production
