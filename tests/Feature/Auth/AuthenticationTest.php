@@ -37,6 +37,33 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_users_can_authenticate_using_the_standard_login_post(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'remember' => true,
+        ]);
+
+        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_users_can_authenticate_using_phone_with_the_standard_login_post(): void
+    {
+        $user = User::factory()->create(['phone' => '255712345678']);
+
+        $response = $this->post(route('login.store'), [
+            'email' => '0712345678',
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertAuthenticatedAs($user);
+    }
+
     public function test_users_can_authenticate_using_their_tanzanian_phone_number(): void
     {
         $user = User::factory()->create(['phone' => '255712345678']);
