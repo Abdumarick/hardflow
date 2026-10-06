@@ -14,7 +14,10 @@ new #[Layout('layouts.guest')] class extends Component
         $this->validate();
         $this->form->authenticate();
         Session::regenerate();
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        // Authentication changes the session ID. Use a full-page redirect so the
+        // next request always carries the regenerated session cookie reliably,
+        // including on mobile browsers and behind production proxies/CDNs.
+        $this->redirectIntended(default: route('dashboard', absolute: false));
     }
 }; ?>
 
