@@ -9,6 +9,8 @@
     <title>{{ config('app.name', 'HardFlow') }} — Sign in</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <style>[x-cloak]{display:none!important}</style>
+    @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans text-slate-950 antialiased">
@@ -41,5 +43,6 @@
             <div class="w-full max-w-[480px]">{{ $slot }}</div>
         </section>
     </main>
+    @livewireScripts
 </body>
 </html>

@@ -90,14 +90,37 @@ main table > tbody > tr:last-child > td {
 
 html.dark body, html.dark .bg-slate-50 { background-color: #020617 !important; color: #e2e8f0; }
 html.dark .bg-white, html.dark .bg-white\/95 { background-color: #0f172a !important; color: #e2e8f0; }
-html.dark .bg-slate-100, html.dark .bg-slate-50\/60 { background-color: #1e293b !important; }
+html.dark .bg-slate-100, html.dark .bg-slate-200, html.dark .bg-slate-300,
+html.dark .bg-slate-50\/60, html.dark .bg-slate-50\/70 { background-color: #1e293b !important; }
+html.dark .bg-blue-50, html.dark .bg-blue-50\/40, html.dark .bg-blue-50\/50,
+html.dark .bg-blue-50\/60, html.dark .bg-blue-100 { background-color: #172554 !important; }
+html.dark .bg-amber-50, html.dark .bg-amber-50\/40, html.dark .bg-amber-50\/60,
+html.dark .bg-amber-100 { background-color: #451a03 !important; }
+html.dark .bg-emerald-50, html.dark .bg-emerald-100,
+html.dark .bg-green-50 { background-color: #052e16 !important; }
+html.dark .bg-red-50, html.dark .bg-rose-50,
+html.dark .bg-rose-100 { background-color: #4c0519 !important; }
 html.dark .border, html.dark .border-b, html.dark .border-r, html.dark .border-t,
 html.dark .border-slate-100, html.dark .border-slate-200, html.dark .border-slate-300 { border-color: #334155 !important; }
+html.dark .border-blue-100, html.dark .border-blue-200 { border-color: #1e3a8a !important; }
+html.dark .border-amber-100, html.dark .border-amber-200 { border-color: #78350f !important; }
+html.dark .border-emerald-100, html.dark .border-emerald-200 { border-color: #065f46 !important; }
+html.dark .border-red-100, html.dark .border-rose-100, html.dark .border-rose-200 { border-color: #881337 !important; }
 html.dark .text-slate-950, html.dark .text-slate-900, html.dark .text-slate-800 { color: #f8fafc !important; }
 html.dark .text-slate-700, html.dark .text-slate-600 { color: #cbd5e1 !important; }
 html.dark .text-slate-500, html.dark .text-slate-400 { color: #94a3b8 !important; }
+html.dark .text-blue-950, html.dark .text-blue-900, html.dark .text-blue-800, html.dark .text-blue-700,
+html.dark .text-blue-600 { color: #93c5fd !important; }
+html.dark .text-amber-950, html.dark .text-amber-900, html.dark .text-amber-800, html.dark .text-amber-700,
+html.dark .text-amber-600 { color: #fcd34d !important; }
+html.dark .text-emerald-950, html.dark .text-emerald-900, html.dark .text-emerald-800, html.dark .text-emerald-700,
+html.dark .text-emerald-600, html.dark .text-green-700 { color: #6ee7b7 !important; }
+html.dark .text-red-950, html.dark .text-red-900, html.dark .text-red-800, html.dark .text-red-700,
+html.dark .text-red-600, html.dark .text-rose-700 { color: #fda4af !important; }
 html.dark input, html.dark select, html.dark textarea { background-color: #0f172a; border-color: #475569; color: #f8fafc; }
+html.dark input::placeholder, html.dark textarea::placeholder { color: #64748b; }
 html.dark option { background-color: #0f172a; color: #f8fafc; }
+html.dark .hover\:bg-slate-50:hover, html.dark .hover\:bg-slate-100:hover { background-color: #1e293b !important; }
 html.dark .shadow-sm, html.dark .shadow-xl, html.dark .shadow-2xl { --tw-shadow-color: rgb(0 0 0 / .45); }
 html.dark main table > thead { background: #172554; color: #bfdbfe; }
 html.dark main table > thead th { border-bottom-color: #1e3a8a; }

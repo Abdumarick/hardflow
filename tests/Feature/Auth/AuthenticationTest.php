@@ -17,7 +17,10 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('pages.auth.login');
+            ->assertSeeVolt('pages.auth.login')
+            ->assertSee('id="password" type="password"', false)
+            ->assertSee('aria-label="Show password"', false)
+            ->assertSee('<style>[x-cloak]{display:none!important}</style>', false);
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
@@ -105,7 +108,16 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('layout.navigation');
+            ->assertSeeVolt('layout.navigation')
+            ->assertSee('data-mobile-navigation-backdrop style="display: none"', false)
+            ->assertSee('onclick="window.hardflowSetMobileNavigation(true)"', false)
+            ->assertSee('onclick="window.hardflowSetMobileNavigation(false)"', false)
+            ->assertSee('w-64 -translate-x-full', false)
+            ->assertSee('lg:translate-x-0', false)
+            ->assertSee('window.hardflowSetMobileNavigation', false)
+            ->assertSee('data-theme-toggle', false)
+            ->assertSee('onclick="window.hardflowToggleTheme()"', false)
+            ->assertSee('window.hardflowApplyTheme', false);
     }
 
     public function test_users_can_logout(): void
@@ -121,6 +133,17 @@ class AuthenticationTest extends TestCase
         $component
             ->assertHasNoErrors()
             ->assertRedirect('/');
+
+        $this->assertGuest();
+    }
+
+    public function test_users_can_log_out_using_the_standard_logout_post(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('logout'))
+            ->assertRedirect(route('login'));
 
         $this->assertGuest();
     }

@@ -15,6 +15,16 @@ use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([

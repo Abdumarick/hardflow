@@ -26,9 +26,12 @@ class DashboardTest extends TestCase
             ->assertSeeText('Business dashboard')
             ->assertSeeText('Seven-day sales trend')
             ->assertSeeText('Recent sales')
-            ->assertSee('Toggle light and dark mode')
+            ->assertSee('Switch to dark mode')
+            ->assertSee('data-theme-toggle', false)
+            ->assertSee('onclick="window.hardflowToggleTheme()"', false)
             ->assertSee("\$dispatch('dashboard-appearance')", false)
             ->assertSee('@dashboard-appearance.window="appearanceOpen = true"', false)
+            ->assertSee('x-show="appearanceOpen" x-cloak style="display: none"', false)
             ->assertSeeText('EN');
     }
 
