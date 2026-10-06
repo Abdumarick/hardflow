@@ -12,6 +12,8 @@ permissions:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    env:
+      APP_KEY: base64:fizTODOQshHYwI6Mt6FBLwGUD164sfwG7IN58ZbsVHI=
 
     steps:
       - name: Checkout code
