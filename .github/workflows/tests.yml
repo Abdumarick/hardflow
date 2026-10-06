@@ -44,3 +44,73 @@ jobs:
 
       - name: Build frontend assets
         run: npm run build
+
+  deploy-production:
+    name: Deploy production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: tests
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: hardflow-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Configure deployment SSH key
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_HOST:?DEPLOY_HOST is not configured}"
+          : "${DEPLOY_SSH_KEY:?DEPLOY_SSH_KEY is not configured}"
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/hardflow_deploy
+          chmod 600 ~/.ssh/hardflow_deploy
+          ssh-keyscan -H -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Back up and deploy HardFlow
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_HOST:?DEPLOY_HOST is not configured}"
+          : "${DEPLOY_USER:?DEPLOY_USER is not configured}"
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+
+          ssh -i ~/.ssh/hardflow_deploy -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" 'bash -se' <<'DEPLOY'
+          set -Eeuo pipefail
+
+          cd /home/hardflow/hardflow-app
+          PHP=/opt/cpanel/ea-php83/root/usr/bin/php
+
+          test -x "$PHP"
+          test -f artisan
+          test -d .git
+
+          "$PHP" artisan hardflow:backup
+          git fetch origin main
+          git merge --ff-only origin/main
+
+          COMPOSER_BIN="$(command -v composer)"
+          "$PHP" "$COMPOSER_BIN" install \
+            --no-dev \
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader
+
+          npm ci
+          npm run build
+
+          "$PHP" artisan optimize:clear
+          "$PHP" artisan config:cache
+          "$PHP" artisan route:cache
+          "$PHP" artisan view:cache
+          "$PHP" artisan queue:restart
+          "$PHP" artisan about --only=environment
+          DEPLOY
