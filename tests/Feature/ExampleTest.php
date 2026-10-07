@@ -19,5 +19,10 @@ class ExampleTest extends TestCase
             ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
             ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+        $policy = (string) $response->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com", $policy);
+        $this->assertStringContainsString("connect-src 'self' https://cloudflareinsights.com", $policy);
     }
 }

@@ -30,7 +30,7 @@ return [
     'all_categories' => 'Kategoria Zote', 'all_brands' => 'Chapa Zote', 'all_statuses' => 'Hali Zote', 'all_price_levels' => 'Viwango Vyote vya Bei', 'all_stock' => 'Hali Zote za Stoo',
     'showing_products' => 'Inaonyesha :shown kati ya bidhaa :total', 'retail_price' => 'Bei ya Rejareja', 'wholesale_price' => 'Jumla', 'cost_price' => 'Bei ya Gharama', 'stock' => 'Stoo', 'actions' => 'Vitendo',
     'stock_in' => 'Ipo Stooni', 'stock_low' => 'Stoo Ndogo', 'stock_out' => 'Imeisha', 'selected' => 'zimechaguliwa', 'select' => 'Chagua', 'export_selected' => 'Hamisha Zilizochaguliwa',
-    'manage' => 'Simamia', 'import_products' => 'Ingiza bidhaa', 'import_help' => 'Tumia kiolezo cha CSV cha HardFlow. Faili lote linahakikiwa kabla ya kuhifadhi bidhaa.',
+    'manage' => 'Simamia', 'import_products' => 'Ingiza bidhaa', 'import_help' => 'Tumia kiolezo cha CSV cha HardFlow. Faili lote linahakikiwa kabla ya kuhifadhi bidhaa.', 'product_analytics' => 'Takwimu za bidhaa',
     'download_template' => 'Pakua kiolezo cha CSV', 'import_now' => 'Ingiza bidhaa', 'imported' => 'Bidhaa :count zimeingizwa kikamilifu.',
     'show' => 'Onyesha', 'per_page' => 'kwa ukurasa',
 ];

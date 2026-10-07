@@ -30,7 +30,7 @@ return [
     'all_categories' => 'All Categories', 'all_brands' => 'All Brands', 'all_statuses' => 'All Statuses', 'all_price_levels' => 'All Price Levels', 'all_stock' => 'All Stock Statuses',
     'showing_products' => 'Showing :shown of :total products', 'retail_price' => 'Retail Price', 'wholesale_price' => 'Wholesale', 'cost_price' => 'Cost Price', 'stock' => 'Stock', 'actions' => 'Actions',
     'stock_in' => 'In Stock', 'stock_low' => 'Low Stock', 'stock_out' => 'Out of Stock', 'selected' => 'selected', 'select' => 'Select', 'export_selected' => 'Export Selected',
-    'manage' => 'Manage', 'import_products' => 'Import products', 'import_help' => 'Use the HardFlow CSV template. The complete file is validated before any rows are saved.',
+    'manage' => 'Manage', 'import_products' => 'Import products', 'import_help' => 'Use the HardFlow CSV template. The complete file is validated before any rows are saved.', 'product_analytics' => 'Product analytics',
     'download_template' => 'Download CSV template', 'import_now' => 'Import products', 'imported' => ':count products imported successfully.',
     'show' => 'Show', 'per_page' => 'per page',
 ];
