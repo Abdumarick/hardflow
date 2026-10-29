@@ -81,6 +81,8 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::put('catalogue/products/{product}', [CatalogueController::class, 'updateProduct'])->name('catalogue.products.update');
         Route::put('catalogue/products/{product}/picture', [CatalogueController::class, 'updateProductPicture'])->name('catalogue.products.picture');
         Route::put('catalogue/products/{product}/active', [CatalogueController::class, 'setProductActive'])->name('catalogue.products.active');
+        Route::delete('catalogue/products/selected', [CatalogueController::class, 'destroySelectedProducts'])->name('catalogue.products.selected.destroy');
+        Route::delete('catalogue/products/{product}', [CatalogueController::class, 'destroyProduct'])->name('catalogue.products.destroy');
         Route::post('catalogue/products/{product}/units', [CatalogueController::class, 'storeProductUnit'])->name('catalogue.product-units.store');
         Route::post('catalogue/products/{product}/prices', [CatalogueController::class, 'storePrice'])->name('catalogue.prices.store');
         Route::put('catalogue/products/{product}/minimum-stock', [CatalogueController::class, 'storeMinimumStock'])->name('catalogue.minimum-stock.store');

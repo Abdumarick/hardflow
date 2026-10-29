@@ -9,6 +9,7 @@ use App\Models\ProductBranchSetting;
 use App\Models\StockBalance;
 use App\Models\Unit;
 use App\Models\User;
+use App\Support\CsvText;
 use App\Support\ProductCsvMatcher;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,7 @@ use SplFileObject;
 class AnalyseProductCsvAction
 {
     /** @var list<string> */
-    private const COLUMNS = ['name', 'sku', 'barcode', 'category', 'brand', 'unit', 'retail_price', 'wholesale_price', 'opening_stock', 'minimum_stock', 'description'];
+    private const COLUMNS = ['name', 'sku', 'barcode', 'category', 'brand', 'unit', 'retail_price', 'wholesale_price', 'buying_price', 'opening_stock', 'minimum_stock', 'description'];
 
     public function __construct(private ProductCsvMatcher $matcher) {}
 
@@ -32,7 +33,7 @@ class AnalyseProductCsvAction
         if (! is_array($rawHeader)) {
             throw ValidationException::withMessages(['file' => 'The CSV file is empty or unreadable.']);
         }
-        $header = array_map(fn ($value) => strtolower(trim((string) preg_replace('/^\xEF\xBB\xBF/', '', (string) $value))), $rawHeader);
+        $header = array_map(fn ($value) => strtolower(trim((string) preg_replace('/^\xEF\xBB\xBF/', '', (string) CsvText::normalize($value)))), $rawHeader);
         $this->validateHeader($header);
 
         $result = ['total' => 0, 'new' => 0, 'updates' => 0, 'unchanged' => 0, 'complete' => 0, 'incomplete' => 0, 'blocked' => 0, 'complete_rows' => [], 'update_rows' => [], 'warnings' => [], 'errors' => [], 'missing_references' => ['units' => []]];
@@ -55,13 +56,13 @@ class AnalyseProductCsvAction
                 continue;
             }
             $row = array_merge(array_fill_keys(self::COLUMNS, ''), array_combine($header, array_slice(array_pad($values, count($header), null), 0, count($header))));
-            $row = array_map(fn ($value) => is_string($value) ? trim($value) : $value, $row);
+            $row = array_map(fn ($value) => is_string($value) ? trim(CsvText::normalize($value)) : $value, $row);
             $validator = Validator::make($row, [
                 'name' => ['required', 'string', 'max:255'], 'sku' => ['nullable', 'string', 'max:255'],
                 'barcode' => ['nullable', 'string', 'max:255'], 'category' => ['nullable', 'string', 'max:255'],
                 'brand' => ['nullable', 'string', 'max:255'], 'unit' => ['required', 'string', 'max:255'],
                 'retail_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
-                'wholesale_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
+                'wholesale_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'], 'buying_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
                 'opening_stock' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
                 'minimum_stock' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
                 'description' => ['nullable', 'string', 'max:2000'],
@@ -71,8 +72,8 @@ class AnalyseProductCsvAction
 
                 continue;
             }
-            if (! $branchId && (filled($row['opening_stock']) || filled($row['minimum_stock']))) {
-                $this->block($result, $line, 'Select a branch before importing opening or minimum stock.');
+            if (! $branchId && (filled($row['opening_stock']) || filled($row['minimum_stock']) || filled($row['buying_price']))) {
+                $this->block($result, $line, 'Select a branch before importing opening stock, minimum stock, or buying price.');
 
                 continue;
             }
@@ -220,6 +221,12 @@ class AnalyseProductCsvAction
                 ->where('stock_adjustment_items.stock_status', 'available')->where('stock_adjustment_items.physical_quantity', $row['opening_stock'])->exists();
             if (! $alreadyPending && bccomp((string) $row['opening_stock'], (string) $current, 4) !== 0) {
                 $changes[] = 'quantity (approval required)';
+            }
+        }
+        if ($branchId && filled($row['buying_price'])) {
+            $current = StockBalance::query()->where('branch_id', $branchId)->where('product_id', $product->id)->where('stock_status', 'available')->value('average_cost') ?? 0;
+            if (bccomp((string) $row['buying_price'], (string) $current, 2) !== 0) {
+                $changes[] = 'buying price';
             }
         }
 

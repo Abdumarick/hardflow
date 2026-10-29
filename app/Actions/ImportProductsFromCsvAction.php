@@ -11,6 +11,7 @@ use App\Models\ProductBranchSetting;
 use App\Models\StockBalance;
 use App\Models\Unit;
 use App\Models\User;
+use App\Support\CsvText;
 use App\Support\ProductCsvMatcher;
 use App\Support\TenantContext;
 use Illuminate\Http\UploadedFile;
@@ -23,12 +24,13 @@ use SplFileObject;
 class ImportProductsFromCsvAction
 {
     /** @var list<string> */
-    private const COLUMNS = ['name', 'sku', 'barcode', 'category', 'brand', 'unit', 'retail_price', 'wholesale_price', 'opening_stock', 'minimum_stock', 'description'];
+    private const COLUMNS = ['name', 'sku', 'barcode', 'category', 'brand', 'unit', 'retail_price', 'wholesale_price', 'buying_price', 'opening_stock', 'minimum_stock', 'description'];
 
     public function __construct(
         private CreateProductAction $createProduct,
         private ChangeProductPriceAction $changePrice,
         private RecordOpeningStockAction $openingStock,
+        private UpdateProductAverageCostAction $updateAverageCost,
         private UpdateProductAction $updateProduct,
         private RequestStockAdjustmentAction $requestAdjustment,
         private ProductCsvMatcher $matcher,
@@ -45,7 +47,7 @@ class ImportProductsFromCsvAction
             throw ValidationException::withMessages(['file' => 'The CSV file is empty or unreadable.']);
         }
         $header = array_map(function ($value): string {
-            $value = preg_replace('/^\xEF\xBB\xBF/', '', (string) $value);
+            $value = preg_replace('/^\xEF\xBB\xBF/', '', (string) CsvText::normalize($value));
 
             return strtolower(trim($value));
         }, $rawHeader);
@@ -83,7 +85,7 @@ class ImportProductsFromCsvAction
                 $values = array_pad($values, count($header), null);
                 $row = array_combine($header, array_slice($values, 0, count($header)));
                 $line = $index + 1;
-                $row = array_map(fn ($value) => is_string($value) ? trim($value) : $value, $row);
+                $row = array_map(fn ($value) => is_string($value) ? trim(CsvText::normalize($value)) : $value, $row);
                 $this->validateRow($row, $line, $branch !== null);
                 $name = $row['name'];
                 $unitName = $row['unit'];
@@ -150,7 +152,7 @@ class ImportProductsFromCsvAction
                         }
                     }
                     if ($branch && ! $isExisting && (float) $row['opening_stock'] > 0) {
-                        $this->openingStock->execute($actor, $branch, $product, (string) $row['opening_stock']);
+                        $this->openingStock->execute($actor, $branch, $product, (string) $row['opening_stock'], StockStatus::Available, filled($row['buying_price']) ? (string) $row['buying_price'] : null);
                     } elseif ($branch && $isExisting && filled($row['opening_stock'])) {
                         $current = StockBalance::query()->where('branch_id', $branch->id)->where('product_id', $product->id)->where('stock_status', StockStatus::Available->value)->value('quantity') ?? 0;
                         $alreadyPending = DB::table('stock_adjustment_items')->join('stock_adjustments', 'stock_adjustments.id', '=', 'stock_adjustment_items.adjustment_id')
@@ -161,6 +163,9 @@ class ImportProductsFromCsvAction
                             $summary['adjustments']++;
                             $changed = true;
                         }
+                    }
+                    if ($branch && filled($row['buying_price']) && ($isExisting || (float) $row['opening_stock'] <= 0)) {
+                        $changed = $this->updateAverageCost->execute($actor, $branch, $product, (string) $row['buying_price']) || $changed;
                     }
                     if ($isExisting) {
                         $summary[$changed ? 'updated' : 'unchanged']++;
@@ -189,7 +194,7 @@ class ImportProductsFromCsvAction
             'barcode' => ['nullable', 'string', 'max:255'], 'category' => ['nullable', 'string', 'max:255'],
             'brand' => ['nullable', 'string', 'max:255'], 'unit' => ['required', 'string', 'max:255'],
             'retail_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
-            'wholesale_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
+            'wholesale_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'], 'buying_price' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'opening_stock' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
             'minimum_stock' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
             'description' => ['nullable', 'string', 'max:2000'],
@@ -197,8 +202,8 @@ class ImportProductsFromCsvAction
         if ($validator->fails()) {
             throw ValidationException::withMessages(['file' => "Row {$line}: ".$validator->errors()->first()]);
         }
-        if (! $hasBranch && ((float) $row['opening_stock'] > 0 || (float) $row['minimum_stock'] > 0)) {
-            throw ValidationException::withMessages(['file' => "Row {$line}: select a branch before importing opening or minimum stock."]);
+        if (! $hasBranch && ((float) $row['opening_stock'] > 0 || (float) $row['minimum_stock'] > 0 || filled($row['buying_price']))) {
+            throw ValidationException::withMessages(['file' => "Row {$line}: select a branch before importing opening stock, minimum stock, or buying price."]);
         }
     }
 

@@ -30,10 +30,11 @@
 
         <section x-show="tab === 'opening'" x-cloak class="rounded-3xl border bg-white p-6 shadow-sm">
             <h2 class="text-lg font-bold">{{ __('inventory.opening_title') }}</h2><p class="mt-1 text-sm text-amber-700">{{ __('inventory.opening_help') }}</p>
-            <form method="POST" action="{{ route('owner.inventory.opening.store') }}" class="mt-5 grid gap-4 md:grid-cols-4">@csrf
+            <form method="POST" action="{{ route('owner.inventory.opening.store') }}" class="mt-5 grid gap-4 md:grid-cols-5">@csrf
                 <select name="product_id" required class="rounded-xl border-slate-200"><option value="">{{ __('inventory.product') }}</option>@foreach($products as $product)<option value="{{ $product->id }}">{{ $product->name }}</option>@endforeach</select>
                 <select name="stock_status" class="rounded-xl border-slate-200">@foreach(\App\Enums\StockStatus::cases() as $status)<option value="{{ $status->value }}">{{ $status->label() }}</option>@endforeach</select>
                 <input name="quantity" type="number" min="0.0001" step="0.0001" required class="rounded-xl border-slate-200" placeholder="{{ __('inventory.quantity') }}">
+                <input name="unit_cost" type="number" min="0" step="0.01" required class="rounded-xl border-slate-200" placeholder="Buying price per unit">
                 <button class="rounded-xl bg-blue-700 px-5 py-3 font-bold text-white">{{ __('inventory.record_movement') }}</button>
             </form>
         </section>

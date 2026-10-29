@@ -3,9 +3,12 @@
 namespace Tests\Feature\Phase2;
 
 use App\Actions\CreateBusinessAction;
+use App\Actions\CreateProductAction;
+use App\Actions\RecordOpeningStockAction;
 use App\Models\Product;
 use App\Models\Unit;
 use App\Models\User;
+use App\Support\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -32,7 +35,7 @@ class ProductManagementTest extends TestCase
     {
         [$business, $owner, $session] = $this->fixture();
         Unit::query()->create(['business_id' => $business->id, 'name' => 'Bag', 'symbol' => 'bag']);
-        $csv = "name,sku,barcode,category,brand,unit,retail_price,wholesale_price,opening_stock,minimum_stock,description\nPortland Cement,CEM-001,60001,Cement,Bamburi,bag,28500,27000,25,5,Imported product\n";
+        $csv = "name,sku,barcode,category,brand,unit,retail_price,wholesale_price,buying_price,opening_stock,minimum_stock,description\nPortland Cement,CEM-001,60001,Cement,Bamburi,bag,28500,27000,25000,25,5,Imported product\n";
 
         $this->actingAs($owner)->withSession($session)->post(route('owner.catalogue.import'), [
             'file' => UploadedFile::fake()->createWithContent('products.csv', $csv),
@@ -49,6 +52,8 @@ class ProductManagementTest extends TestCase
         $this->assertDatabaseHas('categories', ['business_id' => $business->id, 'name' => 'Cement']);
         $this->assertDatabaseHas('brands', ['business_id' => $business->id, 'name' => 'Bamburi']);
         $this->assertDatabaseHas('stock_balances', ['business_id' => $business->id, 'quantity' => 25]);
+        $this->assertDatabaseHas('stock_balances', ['business_id' => $business->id, 'quantity' => 25, 'average_cost' => 25000]);
+        $this->assertDatabaseHas('stock_movements', ['business_id' => $business->id, 'quantity_delta' => 25, 'unit_cost' => 25000]);
         $this->assertDatabaseCount('product_prices', 2);
 
         $response = $this->actingAs($owner)->withSession($session)->get(route('owner.catalogue.export'));
@@ -141,11 +146,29 @@ class ProductManagementTest extends TestCase
         $this->assertDatabaseCount('products', 1);
     }
 
+    public function test_import_converts_windows_1252_product_text_to_utf8(): void
+    {
+        [$business, $owner, $session] = $this->fixture();
+        Unit::query()->create(['business_id' => $business->id, 'name' => 'Piece', 'symbol' => 'pc']);
+        $csv = "name,sku,unit,description\nEarth rod M\x85,ER-1,pc,Grounding component\n";
+
+        $this->actingAs($owner)->withSession($session)->post(route('owner.catalogue.import'), [
+            'file' => UploadedFile::fake()->createWithContent('windows-export.csv', $csv),
+        ])->assertRedirect()->assertSessionHas('status');
+
+        $preview = $this->app['session']->get('product_import_preview');
+        $this->assertSame(0, $preview['blocked']);
+        $this->actingAs($owner)->post(route('owner.catalogue.import.approve'), ['token' => $preview['token']])
+            ->assertRedirect()->assertSessionHas('status');
+
+        $this->assertDatabaseHas('products', ['business_id' => $business->id, 'sku' => 'ER-1', 'name' => 'Earth rod M…']);
+    }
+
     public function test_malformed_numeric_value_reports_its_row_and_rolls_back(): void
     {
         [$business, $owner, $session] = $this->fixture();
         Unit::query()->create(['business_id' => $business->id, 'name' => 'Piece', 'symbol' => 'pc']);
-        $csv = "name,sku,unit,opening_stock\nValid Product,VALID-1,pc,4\nBroken Product,BROKEN-1,pc,many\n";
+        $csv = "name,sku,unit,buying_price,opening_stock\nValid Product,VALID-1,pc,10,4\nBroken Product,BROKEN-1,pc,10,many\n";
 
         $response = $this->actingAs($owner)->withSession($session)->from(route('owner.catalogue.index'))->post(route('owner.catalogue.import'), [
             'file' => UploadedFile::fake()->createWithContent('products.csv', $csv),
@@ -193,6 +216,37 @@ class ProductManagementTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['business_id' => $business->id, 'action' => 'product.picture_updated', 'subject_id' => $product->id]);
     }
 
+    public function test_owner_can_delete_an_unused_product_or_selected_unused_products(): void
+    {
+        [$business, $owner, $session] = $this->fixture();
+        $first = Product::query()->create(['business_id' => $business->id, 'name' => 'Unused Product One', 'sku' => 'UNUSED-1']);
+        $second = Product::query()->create(['business_id' => $business->id, 'name' => 'Unused Product Two', 'sku' => 'UNUSED-2']);
+
+        $this->actingAs($owner)->withSession($session)->delete(route('owner.catalogue.products.destroy', $first))
+            ->assertRedirect()->assertSessionHas('status');
+        $this->assertDatabaseMissing('products', ['id' => $first->id]);
+
+        $this->actingAs($owner)->withSession($session)->delete(route('owner.catalogue.products.selected.destroy'), ['public_ids' => [$second->public_id]])
+            ->assertRedirect()->assertSessionHas('status');
+        $this->assertDatabaseMissing('products', ['id' => $second->id]);
+        $this->assertDatabaseHas('audit_logs', ['business_id' => $business->id, 'action' => 'product.deleted']);
+    }
+
+    public function test_product_with_inventory_history_cannot_be_deleted(): void
+    {
+        [$business, $owner, $session] = $this->fixture();
+        $unit = Unit::query()->create(['business_id' => $business->id, 'name' => 'Piece', 'symbol' => 'pc']);
+        app(TenantContext::class)->setForUser($owner, $business, $business->branches->first());
+        $product = app(CreateProductAction::class)->execute($owner, $business, ['name' => 'Tracked Product', 'unit_id' => $unit->id]);
+        app(RecordOpeningStockAction::class)->execute($owner, $business->branches->first(), $product, '1');
+
+        $this->actingAs($owner)->withSession($session)->delete(route('owner.catalogue.products.destroy', $product))
+            ->assertRedirect()->assertSessionHasErrors('product');
+
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+        $this->assertDatabaseHas('product_units', ['product_id' => $product->id]);
+    }
+
     public function test_pending_import_can_be_rejected_without_creating_products(): void
     {
         [$business, $owner, $session] = $this->fixture();
@@ -216,14 +270,14 @@ class ProductManagementTest extends TestCase
     {
         [$business, $owner, $session] = $this->fixture();
         Unit::query()->create(['business_id' => $business->id, 'name' => 'Piece', 'symbol' => 'pc']);
-        $initial = "name,sku,category,brand,unit,retail_price,opening_stock\nClaw Hammer,HAM-1,Tools,Acme,pc,10000,5\n";
+        $initial = "name,sku,category,brand,unit,retail_price,buying_price,opening_stock\nClaw Hammer,HAM-1,Tools,Acme,pc,10000,7500,5\n";
         $this->actingAs($owner)->withSession($session)->post(route('owner.catalogue.import'), [
             'file' => UploadedFile::fake()->createWithContent('initial.csv', $initial),
         ]);
         $preview = $this->app['session']->get('product_import_preview');
         $this->actingAs($owner)->post(route('owner.catalogue.import.approve'), ['token' => $preview['token']]);
 
-        $update = "name,sku,category,brand,unit,retail_price,opening_stock\nHeavy Claw Hammer,HAM-1,Hand Tools,Acme,pc,12500,8\n";
+        $update = "name,sku,category,brand,unit,retail_price,buying_price,opening_stock\nHeavy Claw Hammer,HAM-1,Hand Tools,Acme,pc,12500,8000,8\n";
         $this->actingAs($owner)->withSession($session)->post(route('owner.catalogue.import'), [
             'file' => UploadedFile::fake()->createWithContent('update.csv', $update),
         ])->assertSessionHas('status');
@@ -234,6 +288,7 @@ class ProductManagementTest extends TestCase
         $this->assertSame(0, $preview['unchanged']);
         $this->assertContains('name', $preview['update_rows'][0]['changes']);
         $this->assertContains('retail price', $preview['update_rows'][0]['changes']);
+        $this->assertContains('buying price', $preview['update_rows'][0]['changes']);
         $this->assertContains('quantity (approval required)', $preview['update_rows'][0]['changes']);
 
         $this->actingAs($owner)->post(route('owner.catalogue.import.approve'), ['token' => $preview['token']])
@@ -244,6 +299,8 @@ class ProductManagementTest extends TestCase
         $this->assertDatabaseHas('categories', ['business_id' => $business->id, 'name' => 'Hand Tools']);
         $this->assertDatabaseHas('product_prices', ['business_id' => $business->id, 'amount' => 12500, 'is_active' => true]);
         $this->assertDatabaseHas('stock_balances', ['business_id' => $business->id, 'quantity' => 5]);
+        $this->assertDatabaseHas('stock_balances', ['business_id' => $business->id, 'quantity' => 5, 'average_cost' => 8000]);
+        $this->assertDatabaseHas('audit_logs', ['business_id' => $business->id, 'action' => 'product.average_cost_updated_from_csv']);
         $this->assertDatabaseHas('stock_adjustments', ['business_id' => $business->id, 'status' => 'pending']);
         $this->assertDatabaseHas('stock_adjustment_items', ['business_id' => $business->id, 'physical_quantity' => 8, 'difference_quantity' => 3]);
 

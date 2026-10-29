@@ -6,6 +6,7 @@ use App\Actions\AnalyseProductCsvAction;
 use App\Actions\AssignProductUnitAction;
 use App\Actions\ChangeProductPriceAction;
 use App\Actions\CreateProductAction;
+use App\Actions\DeleteProductAction;
 use App\Actions\ImportProductsFromCsvAction;
 use App\Actions\UpdateCategoryAction;
 use App\Actions\UpdateProductAction;
@@ -206,8 +207,8 @@ class CatalogueController extends Controller
 
         return response()->streamDownload(function (): void {
             $output = fopen('php://output', 'w');
-            fputcsv($output, ['name', 'sku', 'barcode', 'category', 'brand', 'unit', 'retail_price', 'wholesale_price', 'opening_stock', 'minimum_stock', 'description']);
-            fputcsv($output, ['Portland Cement 50kg', 'CEM-50', '6001234560001', 'Cement', 'Bamburi', 'bag', '28500', '27000', '50', '10', 'Example row - remove before importing']);
+            fputcsv($output, ['name', 'sku', 'barcode', 'category', 'brand', 'unit', 'retail_price', 'wholesale_price', 'buying_price', 'opening_stock', 'minimum_stock', 'description']);
+            fputcsv($output, ['Portland Cement 50kg', 'CEM-50', '6001234560001', 'Cement', 'Bamburi', 'bag', '28500', '27000', '25000', '50', '10', 'Example row - remove before importing']);
             fclose($output);
         }, 'hardflow-product-import-template.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
@@ -381,6 +382,43 @@ class CatalogueController extends Controller
         return back()->with('status', $data['is_active'] ? 'Product activated.' : 'Product deactivated.');
     }
 
+    public function destroyProduct(Request $request, Product $product, DeleteProductAction $action): RedirectResponse
+    {
+        $this->deleteProduct($request, $product, $action);
+
+        return back()->with('status', "{$product->name} was deleted.");
+    }
+
+    public function destroySelectedProducts(Request $request, TenantContext $tenant, DeleteProductAction $action): RedirectResponse
+    {
+        $data = $request->validate(['public_ids' => ['required', 'array', 'min:1', 'max:100'], 'public_ids.*' => ['required', 'uuid', 'distinct']]);
+        $products = Product::query()->where('business_id', $tenant->businessId())->whereIn('public_id', $data['public_ids'])->get();
+        if ($products->count() !== count($data['public_ids'])) {
+            throw ValidationException::withMessages(['products' => 'One or more selected products could not be found.']);
+        }
+
+        $deleted = 0;
+        $blocked = [];
+        foreach ($products as $product) {
+            try {
+                $this->deleteProduct($request, $product, $action);
+                $deleted++;
+            } catch (ValidationException) {
+                $blocked[] = $product->name;
+            }
+        }
+        if ($deleted === 0) {
+            return back()->withErrors(['products' => 'No products were deleted. Selected products with inventory or transaction history must be deactivated instead.']);
+        }
+
+        $message = "{$deleted} product(s) deleted.";
+        if ($blocked !== []) {
+            $message .= ' '.count($blocked).' product(s) with history were not deleted and should be deactivated instead.';
+        }
+
+        return back()->with('status', $message);
+    }
+
     public function updateCategory(Request $request, Category $category, UpdateCategoryAction $action): RedirectResponse
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:255'], 'parent_id' => ['nullable', 'integer'], 'description' => ['nullable', 'string', 'max:2000']]);
@@ -424,6 +462,15 @@ class CatalogueController extends Controller
         abort_unless($request->user()->hasPermissionInBusiness(PermissionName::ProductsUpdate, $business), 403);
 
         return $business;
+    }
+
+    private function deleteProduct(Request $request, Product $product, DeleteProductAction $action): void
+    {
+        $imagePath = $product->image_path;
+        $action->execute($request->user(), $product);
+        if ($imagePath) {
+            Storage::disk('public')->delete($imagePath);
+        }
     }
 
     private function audit(Request $request, int $businessId, string $action, object $subject, array $values): void

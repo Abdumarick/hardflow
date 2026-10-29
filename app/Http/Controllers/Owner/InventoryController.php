@@ -50,8 +50,8 @@ class InventoryController extends Controller
 
     public function opening(Request $request, TenantContext $tenant, RecordOpeningStockAction $action): RedirectResponse
     {
-        $data = $request->validate(['product_id' => ['required', 'integer'], 'quantity' => ['required', 'numeric', 'gt:0'], 'stock_status' => ['required', Rule::enum(StockStatus::class)]]);
-        $action->execute($request->user(), $tenant->branch(), Product::query()->findOrFail($data['product_id']), (string) $data['quantity'], StockStatus::from($data['stock_status']));
+        $data = $request->validate(['product_id' => ['required', 'integer'], 'quantity' => ['required', 'numeric', 'gt:0'], 'unit_cost' => ['required', 'numeric', 'min:0', 'decimal:0,2'], 'stock_status' => ['required', Rule::enum(StockStatus::class)]]);
+        $action->execute($request->user(), $tenant->branch(), Product::query()->findOrFail($data['product_id']), (string) $data['quantity'], StockStatus::from($data['stock_status']), (string) $data['unit_cost']);
 
         return back()->with('status', 'Opening stock recorded.');
     }

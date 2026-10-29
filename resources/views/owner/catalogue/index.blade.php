@@ -74,4 +74,27 @@
             @endforeach
         </section>
     </div>
+    <script>
+        document.querySelectorAll('input[name="search"]').forEach((input) => {
+            let timer;
+            input.addEventListener('input', () => {
+                clearTimeout(timer);
+                timer = setTimeout(() => input.form.requestSubmit(), 300);
+            });
+        });
+
+        const trashIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14M10 11v5m4-5v5"/></svg>';
+        document.querySelectorAll('form').forEach((form) => {
+            if (!form.querySelector('input[name="_method"][value="DELETE"]')) return;
+
+            const button = form.querySelector('button');
+            if (!button) return;
+
+            button.innerHTML = trashIcon;
+            button.classList.remove('px-3', 'py-2', 'text-xs', 'font-bold');
+            button.classList.add('p-2');
+            button.setAttribute('aria-label', 'Delete');
+            button.setAttribute('title', 'Delete');
+        });
+    </script>
 </x-app-layout>
